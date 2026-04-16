@@ -1,7 +1,7 @@
 {
   "name": "cog-second-brain",
   "version": "3.5.0",
-  "description": "A self-evolving second brain built on Obsidian markdown, Git, and multi-agent skill surfaces for Claude Code, Kiro, Gemini CLI, Codex, and other markdown-reading assistants.",
+  "description": "Self-evolving second brain with 17 AI agent skills, 6 worker agents, and people CRM. Inspired by Garry Tan's gstack specialist sessions and gbrain knowledge patterns. Works with Claude Code, Cursor, Kiro, Gemini CLI, Codex, and any markdown-reading agent.",
   "author": {
     "name": "Huy Tieu",
     "url": "https://github.com/huytieu"
@@ -16,13 +16,26 @@
     "second-brain",
     "knowledge-management",
     "obsidian",
-    "productivity",
     "ai-agents",
+    "productivity",
+    "garry-tan",
+    "gstack",
+    "gbrain",
+    "worker-agents",
+    "people-crm",
+    "braindump",
+    "daily-brief",
+    "team-intelligence",
+    "claude-code",
+    "cursor",
+    "kiro",
+    "gemini-cli",
+    "codex",
+    "agentic",
+    "self-evolving",
     "personal-intelligence",
     "note-taking",
-    "self-evolving",
-    "braindump",
-    "daily-brief"
+    "specialist-sessions"
   ],
   "category": "productivity",
   "tags": [
@@ -31,7 +44,14 @@
     "second-brain",
     "ai-agents",
     "productivity",
-    "note-taking"
+    "garry-tan",
+    "gstack",
+    "gbrain",
+    "worker-agents",
+    "people-crm",
+    "claude-code",
+    "cursor",
+    "specialist-sessions"
   ],
   "skills": [
     {

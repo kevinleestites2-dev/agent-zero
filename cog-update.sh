@@ -105,6 +105,8 @@ FRAMEWORK_FILES=(
 
   # Plugin metadata
   ".claude-plugin/plugin.json"
+  ".cursor-plugin/plugin.json"
+  ".cursorrules"
   "marketplace-entry.json"
 
   # Git infrastructure

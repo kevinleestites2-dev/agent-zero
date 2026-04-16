@@ -4,7 +4,9 @@
 
 [Quick Start](#quick-start) | [Skills](#skills) | [Features](#features-at-a-glance) | [FAQ](#faq) | [SETUP.md](SETUP.md)
 
-> Works with [Claude Code](https://claude.ai/download) &bull; [Kiro](https://kiro.dev/) &bull; [Gemini CLI](https://github.com/google-gemini/gemini-cli) &bull; [OpenAI Codex](https://github.com/openai/codex) &bull; any AI that reads markdown
+> Works with [Claude Code](https://claude.ai/download) &bull; [Cursor](https://cursor.com/) &bull; [Kiro](https://kiro.dev/) &bull; [Gemini CLI](https://github.com/google-gemini/gemini-cli) &bull; [OpenAI Codex](https://github.com/openai/codex) &bull; any AI that reads markdown
+>
+> Inspired by [Garry Tan's gstack](https://github.com/garrytan/gstack) and [gbrain](https://github.com/garrytan/gbrain)
 
 ```mermaid
 graph LR
@@ -33,10 +35,16 @@ cd COG-second-brain
 | Agent | Command | How it finds skills |
 |---|---|---|
 | Claude Code | `code .` → "Run onboarding" | `.claude/skills/` |
+| Cursor | Open folder → "Run onboarding" | `.cursor-plugin/` + `.cursorrules` |
 | Kiro | Open folder → "setup COG" | `.kiro/powers/` |
 | Gemini CLI | `gemini` → `/onboarding` | `GEMINI.md` + `.gemini/commands/` |
 | OpenAI Codex | `codex` → "Run onboarding" | `AGENTS.md` |
 | Other agents | Point at `AGENTS.md` → "Run onboarding" | `AGENTS.md` |
+
+**Or install via [skills.sh](https://skills.sh):**
+```bash
+npx skills add huytieu/COG-second-brain
+```
 
 Done — COG is personalized and ready in ~2 minutes. See [SETUP.md](SETUP.md) for optional config (Git sync, iCloud, Obsidian Tasks, etc.).
 
@@ -46,7 +54,8 @@ COG ships a **full Claude Code surface** plus **core native surfaces** for Kiro 
 
 | Surface | Current support | Notes |
 |---|---|---|
-| Claude Code | 17 native skills | Full first-class surface |
+| Claude Code | 17 native skills + 6 worker agents | Full first-class surface |
+| Cursor | Plugin manifest + rules | `.cursor-plugin/plugin.json` + `.cursorrules` |
 | Kiro | 7 native powers | Core workflows today |
 | Gemini CLI | 7 native commands | Core workflows today |
 | `AGENTS.md` | 17 documented commands | Universal fallback for Codex and other agents |
@@ -160,6 +169,7 @@ graph TD
 |---|---|---|
 | **Self-Evolving** — Learns your patterns, auto-organizes content, builds frameworks | **Self-Healing** — Rename files or restructure; cross-references update automatically | **Verification-First** — Sources required, 7-day freshness, confidence levels on all analysis |
 | **Privacy-First** — Local `.md` files, strict domain separation, no external servers | **Multi-Device** — iCloud sync to iPhone/iPad/Mac; Git for version history | **Obsidian Tasks** — `📅 YYYY-MM-DD` emoji format works with Tasks plugin dashboards |
+| **Garry Tan Inspired** — gstack specialist sessions + gbrain knowledge patterns | **Multi-Platform** — Listed on [skills.sh](https://skills.sh), [agentskill.sh](https://agentskill.sh), [cursor.directory](https://cursor.directory) | **Worker Agents** — Sonnet handles I/O, Opus handles thinking |
 
 ## Your Vault
 
@@ -248,9 +258,16 @@ Git is optional but recommended for version history. COG works fine with just iC
 | [Contribute](CONTRIBUTING.md) | [Report bugs](https://github.com/huytieu/COG-second-brain/issues) | [Discussions](https://github.com/huytieu/COG-second-brain/discussions) |
 | [Sponsor on GitHub](https://github.com/sponsors/huytieu) | [Buy me a coffee](https://buymeacoffee.com/0xlight) | [MIT License](LICENSE) |
 
-## Acknowledgments
+## Acknowledgments & Inspiration
 
-Built with [Claude Code](https://claude.ai/code), [Kiro](https://kiro.dev/), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [OpenAI Codex](https://github.com/openai/codex), and [Obsidian](https://obsidian.md/). Inspired by Zettelkasten, Building a Second Brain, and GTD.
+Built with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com/), [Kiro](https://kiro.dev/), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [OpenAI Codex](https://github.com/openai/codex), and [Obsidian](https://obsidian.md/).
+
+**Key inspirations:**
+- [**Garry Tan's gstack**](https://github.com/garrytan/gstack) — specialist sessions, clear operating gears, repo-local skill distribution. COG's worker agent architecture and model routing borrow directly from gstack's explicit mode separation.
+- [**Garry Tan's gbrain**](https://github.com/garrytan/gbrain) — Compiled Truth + Timeline pattern, tiered enrichment for people profiles, brain-first lookup protocol. COG's people CRM and knowledge-first approach are adapted from gbrain's design.
+- **Zettelkasten** — atomic, interlinked notes as the foundation of knowledge
+- **Building a Second Brain (Tiago Forte)** — PARA organization, progressive summarization
+- **GTD (David Allen)** — capture everything, process systematically
 
 ## Star History
 
