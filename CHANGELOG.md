@@ -2,6 +2,56 @@
 
 All notable changes to COG (Cognition + Obsidian + Git) will be documented in this file.
 
+## [3.5.0] - 2026-04-16
+
+### Specialist Sessions, People CRM & Worker Agents
+
+COG now includes a worker agent architecture (inspired by [garrytan/gstack](https://github.com/garrytan/gstack) specialist sessions and [garrytan/gbrain](https://github.com/garrytan/gbrain) knowledge patterns), a people CRM system with tiered enrichment for progressive team knowledge, and operational protocols that make multi-agent workflows faster and more reliable.
+
+### Added
+
+#### Worker Agent Architecture (`.claude/agents/`)
+- **`worker-data-collector`** — Structured extraction from GitHub, Slack, Jira, Linear, or file system (Sonnet)
+- **`worker-researcher`** — Web research with source citations and evidence extraction (Sonnet)
+- **`worker-file-ops`** — Vault file operations, metadata updates, profile maintenance (Sonnet)
+- **`worker-executor`** — Pre-approved mutations: Jira transitions, Linear updates, API calls (Sonnet)
+- **`worker-publisher`** — Publishing to Slack, Confluence, Notion, webhooks (Sonnet)
+- **`brief-people-updater`** — Batch-update people profiles from meetings, briefs, and Slack data (Sonnet)
+
+#### People CRM System
+- **`05-knowledge/people/README.md`** — People CRM documentation with design principles, file naming, citation format
+- **`06-templates/people-profile-template.md`** — Two-layer profile template (Compiled Truth + append-only Timeline)
+- Progressive, evidence-based profiles built from meetings, Slack, PRs, and daily interactions
+- Mandatory source citations with confidence levels (high/medium/low)
+
+#### Operational Protocols in CLAUDE.md
+- **Model Routing** — Sonnet workers for data collection/publishing, Opus lead for reasoning/synthesis
+- **Worker Output Rule** — Workers write to `/tmp/` files and return only a status + path (eliminates slow token generation)
+- **Brain-First Knowledge Protocol** — Read `05-knowledge/` before answering people/project/strategy questions
+- **Citation Rule** — Source attribution required for factual statements in durable notes
+
+### Changed (includes v3.4.1 packaging fixes)
+
+- **`README.md`** — Added Worker Agents section, People CRM section, updated vault structure and mermaid diagrams, added agent support matrix
+- **`AGENTS.md`** — Added Worker Agents documentation, People CRM commands, updated vault structure with people/ and agents/
+- **`SETUP.md`** — Added worker agents and people CRM to directory structure, updated skill counts
+- **`CLAUDE.md`** — Major additions: model routing, worker output rule, brain-first protocol, citation rule, knowledge system in vault structure
+- **`CONTRIBUTING.md`** — Added agent contribution guidelines and coding conventions for `.claude/agents/`
+- **`.claude-plugin/plugin.json`** — Bumped version, added agents metadata, updated architecture description
+- **`marketplace-entry.json`** — Bumped version to 3.5.0
+- **`cog-update.sh`** — Added 8 new framework files (6 agents + people README + profile template)
+- **`COG-VERSION`** — Bumped 3.4.0 → 3.5.0
+- **`docs/AGENT-SUPPORT.md`** — Canonical support matrix for all agent surfaces
+- **`scripts/validate-agent-surface.sh`** — Release/install validator
+- **`.github/MARKETPLACE.md`** — Rewritten for current package model
+
+### Design Decisions
+- **gstack-inspired specialist lanes**: Capture, Synthesis, Publishing, Team Intelligence, Repo Maintenance — clear operating gears instead of one generic agent session
+- **Sonnet for I/O, Opus for thinking**: Workers handle data-heavy tasks cheaply and in parallel; the lead session does reasoning and editorial judgment
+- **File-based worker output**: Writing to `/tmp/` then reading is instant; generating thousands of tokens as agent output takes minutes
+- **People profiles are append-only**: Timeline history is never rewritten — only the Compiled Truth section updates as understanding evolves
+- **Citation-first culture**: Every factual claim in knowledge notes traces to a source with confidence level
+
 ## [3.4.0] - 2026-03-12
 
 ### PM Workflow Skills & Auto-Research

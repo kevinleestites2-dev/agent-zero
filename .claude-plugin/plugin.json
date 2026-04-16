@@ -1,7 +1,7 @@
 {
   "name": "cog-second-brain",
-  "version": "3.4.0",
-  "description": "A self-evolving second brain system using Claude Code, Obsidian markdown files, and Git version control. Features specialized AI agents for knowledge management, daily intelligence briefings, and strategic insights extraction.",
+  "version": "3.5.0",
+  "description": "A self-evolving second brain built on Obsidian markdown, Git, and multi-agent skill surfaces for Claude Code, Kiro, Gemini CLI, Codex, and other markdown-reading assistants.",
   "author": {
     "name": "Huy Tieu",
     "url": "https://github.com/huytieu"
@@ -65,6 +65,21 @@
       "description": "Quick capture URLs with automatic content extraction, insights, and categorization into knowledge booklets"
     },
     {
+      "name": "team-brief",
+      "path": ".claude/skills/team-brief/SKILL.md",
+      "description": "Cross-reference GitHub, Linear, Slack, PostHog, meetings, and braindumps into a daily team intelligence brief with Linear sync-back"
+    },
+    {
+      "name": "meeting-transcript",
+      "path": ".claude/skills/meeting-transcript/SKILL.md",
+      "description": "Process meeting recordings into structured decisions, action items, and team dynamics"
+    },
+    {
+      "name": "comprehensive-analysis",
+      "path": ".claude/skills/comprehensive-analysis/SKILL.md",
+      "description": "Deep 7-day analysis for weekly reviews, board prep, or strategic planning"
+    },
+    {
       "name": "update-cog",
       "path": ".claude/skills/update-cog/SKILL.md",
       "description": "Check for and apply upstream COG framework updates without touching personal content"
@@ -107,7 +122,7 @@
   ],
   "metadata": {
     "pluginRoot": ".",
-    "architecture": "claude-agent-skills",
+    "architecture": "multi-agent-skill-pack",
     "features": [
       "Self-evolving intelligence with pattern recognition",
       "Self-healing system with auto-updating cross-references",
@@ -116,21 +131,32 @@
       "Plain text markdown files (no database, no vendor lock-in)",
       "Multi-device sync via iCloud (iPhone, iPad, Mac)",
       "Git version control for tracking thinking evolution",
-      "Progressive disclosure for efficient context usage"
+      "Agent-surface validator for manifest/docs consistency",
+      "Worker agent architecture with model routing (Sonnet workers, Opus lead)",
+      "People CRM with tiered enrichment and evidence-based profiles"
     ],
     "requirements": {
       "obsidian": "Recommended for markdown file management",
-      "git": "Optional but recommended for version control",
-      "claudeCode": "Required for AI agent functionality"
+      "git": "Optional but recommended for version control and safe updates",
+      "claudeCode": "Recommended for the full 17-skill native experience",
+      "kiro": "Optional - ships 7 native core powers",
+      "geminiCli": "Optional - ships 7 native core commands",
+      "agentsMd": "Universal fallback surface for Codex and other markdown-reading agents"
     },
     "installation": {
-      "quickStart": "Clone repo into Obsidian vault, copy .claude directory, run /onboarding",
-      "setupTime": "3-5 minutes",
-      "onboardingTime": "2 minutes"
+      "quickStart": "Clone the repo, cd into COG-second-brain, then run onboarding in your agent of choice",
+      "setupTime": "2-5 minutes",
+      "onboardingTime": "2 minutes",
+      "validation": "Run ./scripts/validate-agent-surface.sh before publishing or after framework updates"
     },
     "directoryStructure": {
-      ".claude/skills": "10 specialized agent skills",
+      ".claude/skills": "17 Claude Code skills (full surface)",
+      ".claude/agents": "6 worker agent definitions for specialist sessions",
       ".claude/roles": "7 role packs for personalized skill and integration recommendations",
+      ".kiro/powers": "7 Kiro powers (core workflows)",
+      ".gemini/commands": "7 Gemini CLI commands (core workflows)",
+      ".gemini/skills": "Detailed Gemini command playbooks",
+      "AGENTS.md": "Universal command surface for Codex and other agents",
       "00-inbox": "Temporary processing area with profile and interests files",
       "01-daily": "Daily briefs and check-ins",
       "02-personal": "Personal domain (strict privacy)",
@@ -141,10 +167,17 @@
     "skillArchitecture": {
       "type": "agent-skills",
       "skills": 17,
+      "workerAgents": 6,
       "rolePacks": 7,
       "invocation": "model-invoked",
       "progressiveDisclosure": true,
-      "description": "Self-contained skills that combine orchestration and specialized processing using Claude's progressive disclosure pattern"
+      "nativeSurfaces": {
+        "claudeCode": 17,
+        "kiro": 7,
+        "geminiCli": 7,
+        "agentsMd": 17
+      },
+      "description": "Self-contained skills with worker agent delegation, full Claude Code surface, core native Kiro/Gemini surfaces, and AGENTS.md as the universal fallback"
     }
   }
 }

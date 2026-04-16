@@ -7,9 +7,10 @@ Complete step-by-step instructions for setting up your COG (Cognition + Obsidian
 ### What You Need
 
 1. **AI Agent** (choose one or more):
-   - [Claude Code](https://claude.ai/download) - Uses `.claude/skills/`
-   - [Kiro](https://kiro.dev/) - Uses `.kiro/powers/`
-   - Any OpenAI-compatible agent - Uses `agents.md`
+   - [Claude Code](https://claude.ai/download) - Uses `.claude/skills/` (full 17-skill native surface)
+   - [Kiro](https://kiro.dev/) - Uses `.kiro/powers/` (7 core native powers)
+   - [Gemini CLI](https://github.com/google-gemini/gemini-cli) - Uses `GEMINI.md` + `.gemini/commands/` (7 core native commands)
+   - Any OpenAI-compatible or markdown-reading agent - Uses `AGENTS.md`
 2. **Obsidian** ([Download here](https://obsidian.md/)) - Recommended (optional)
 3. **Git** - Already on your system if you can run clone commands
 
@@ -35,18 +36,20 @@ code .
 - Kiro will activate the cog-onboarding power
 
 **Other Agents:**
-- Point the agent to `agents.md` for skill documentation
+- Point the agent to `AGENTS.md` for skill documentation
 - Ask it to run the onboarding workflow
 
 That's it! You now have a working second brain.
 
 **What just happened?**
 - The cloned `COG-second-brain` folder IS your second brain
-- 17 AI skills are available in multiple formats:
-  - `.claude/skills/` - For Claude Code
-  - `.kiro/powers/` - For Kiro
-  - `agents.md` - For any agent
+- COG now exposes a clear multi-agent support matrix:
+  - `.claude/skills/` - 17 Claude Code skills (full surface)
+  - `.kiro/powers/` - 7 Kiro powers (core workflows)
+  - `.gemini/commands/` + `.gemini/skills/` - 7 Gemini CLI commands (core workflows)
+  - `AGENTS.md` - 17 documented commands for Codex and other agents
 - Onboarding will create your personalized directory structure
+- You can validate the packaged agent surfaces anytime with `./scripts/validate-agent-surface.sh`
 
 **Optional: Use with Obsidian**
 
@@ -124,8 +127,9 @@ After running onboarding, you'll have this structure:
 
 ```
 COG-second-brain/              # This is your second brain folder
-├── agents.md                  # Universal agent documentation
+├── AGENTS.md                  # Universal agent documentation
 ├── .claude/
+│   ├── agents/                # 6 worker agent definitions
 │   ├── roles/                 # 7 role packs for personalized recommendations
 │   └── skills/                # 17 Claude Code skills
 │       ├── onboarding/
@@ -142,13 +146,17 @@ COG-second-brain/              # This is your second brain folder
 │       ├── publish-to-confluence/
 │       └── update-knowledge-base/
 ├── .kiro/
-│   └── powers/                # 6 Kiro powers
+│   └── powers/                # 7 Kiro powers (core workflows)
 │       ├── cog-onboarding/
 │       ├── cog-braindump/
 │       ├── cog-daily-brief/
 │       ├── cog-weekly-checkin/
 │       ├── cog-knowledge-consolidation/
-│       └── cog-url-dump/
+│       ├── cog-url-dump/
+│       └── cog-update/
+├── .gemini/
+│   ├── commands/              # 7 Gemini CLI commands (core workflows)
+│   └── skills/                # Detailed Gemini command playbooks
 ├── CLAUDE.md                  # Framework instructions (role packs, integrations)
 ├── 00-inbox/                  # Profiles, interests, integrations (created by onboarding)
 ├── 01-daily/                  # Daily briefs and check-ins
@@ -162,9 +170,10 @@ COG-second-brain/              # This is your second brain folder
 ├── 05-knowledge/              # Consolidated insights
 │   ├── consolidated/
 │   ├── patterns/
+│   ├── people/                # People CRM profiles
 │   ├── booklets/              # URL bookmarks
 │   └── timeline/
-└── 06-templates/              # Markdown templates
+└── 06-templates/              # Markdown templates (incl. people profile)
 ```
 
 ## Optional: Advanced Configuration
@@ -309,14 +318,22 @@ touch .kiro/powers/my-power/POWER.md
 
 ### For Other Agents
 
-Edit `agents.md` to add or modify skill documentation. This file serves as universal documentation that any AI agent can read.
+Edit `AGENTS.md` to add or modify skill documentation. This file serves as universal documentation that any AI agent can read.
 
 ### Keeping Skills in Sync
 
-When you modify a skill, update all formats:
-1. `.claude/skills/[name]/SKILL.md` - Claude Code
-2. `.kiro/powers/cog-[name]/POWER.md` - Kiro
-3. `agents.md` - Universal documentation
+When you modify a skill, update every shipped surface that claims to support it:
+1. `.claude/skills/[name]/SKILL.md` - Claude Code (required)
+2. `AGENTS.md` - Universal documentation (required)
+3. `.claude-plugin/plugin.json` - Marketplace/package manifest (required)
+4. `.kiro/powers/cog-[name]/POWER.md` - Kiro (if that surface supports the skill)
+5. `.gemini/commands/[name].toml` + `.gemini/skills/[name].md` - Gemini CLI (if that surface supports the skill)
+6. `README.md` / `SETUP.md` / `docs/AGENT-SUPPORT.md` - support matrix docs when counts or support levels change
+
+After changes, run:
+```bash
+./scripts/validate-agent-surface.sh
+```
 
 ## Troubleshooting
 
@@ -336,8 +353,9 @@ When you modify a skill, update all formats:
 3. Try mentioning specific keywords from the power's `keywords` list
 
 **Solutions for Other Agents:**
-1. Ensure `agents.md` exists in the root folder
-2. Point the agent to read `agents.md` for available commands
+1. Ensure `AGENTS.md` exists in the root folder
+2. Point the agent to read `AGENTS.md` for available commands
+3. Run `./scripts/validate-agent-surface.sh` to confirm packaged docs and manifests are aligned
 
 ### Files Saving to Wrong Location
 
@@ -431,6 +449,7 @@ The agent will:
 2. Show what's changed
 3. Let you approve updates per-file (with backup option for customized files)
 4. Apply updates and suggest a commit
+5. Recommend validating packaged surfaces before you publish or share the updated framework
 
 ### Method 2: Shell Script
 
@@ -446,6 +465,12 @@ The agent will:
 
 # Update everything without prompting
 ./cog-update.sh --force
+
+# Run packaging/support-surface validation only
+./cog-update.sh --validate
+
+# Or run the validator directly
+./scripts/validate-agent-surface.sh
 ```
 
 ### Method 3: Manual Git
@@ -473,7 +498,7 @@ git add -A && git commit -m "Update COG framework to v$(cat COG-VERSION)"
 | Skills (`.claude/skills/`, `.kiro/powers/`, `.gemini/`) | `00-inbox/` (profiles, notes) |
 | Docs (`README.md`, `SETUP.md`, `AGENTS.md`, etc.) | `01-daily/` (briefs, checkins) |
 | Scripts (`cog-update.sh`) | `02-personal/` (braindumps) |
-| Config (`.gitignore`, `plugin.json`) | `03-professional/` (braindumps) |
+| Config (`.gitignore`, `.claude-plugin/plugin.json`, `marketplace-entry.json`) | `03-professional/` (braindumps) |
 | Version (`COG-VERSION`) | `04-projects/` (project files) |
 | | `05-knowledge/` (consolidated) |
 | | `06-templates/` (your templates) |

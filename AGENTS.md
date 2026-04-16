@@ -210,6 +210,76 @@ This document defines the available commands/skills for AI agents interacting wi
 
 ---
 
+### /team-brief
+
+**Description:** Generate a daily team intelligence brief by cross-referencing Linear, Slack, GitHub, PostHog, meetings, and braindumps — then sync the resulting intelligence back into Linear.
+
+**Triggers:**
+- `/team-brief`
+- "team brief"
+- "what did we ship?"
+- "daily team update"
+- "summarize the team's progress"
+
+**Purpose:** Build an evidence-backed operating brief for product and engineering leads by combining multiple sources of truth, highlighting blockers and momentum, and writing the most important updates back to Linear.
+
+**What it does:**
+1. Pulls active initiatives, projects, and issues from Linear
+2. Cross-references GitHub PRs, Slack discussions, meetings, PostHog, and braindumps
+3. Summarizes shipped work, in-progress work, risks, and signals that matter
+4. Writes initiative status updates and issue/project sync-backs into Linear where appropriate
+5. Produces a concise brief with a Linear sync report
+
+**Output location:** `03-professional/team-briefs/team-brief-YYYY-MM-DD.md`
+
+---
+
+### /meeting-transcript
+
+**Description:** Process meeting transcripts into structured decisions, action items, and strategic themes.
+
+**Triggers:**
+- `/meeting-transcript`
+- "process this meeting"
+- "analyze this transcript"
+- "summarize this meeting"
+- "meeting notes from transcript"
+
+**Purpose:** Turn noisy transcripts into clean decision records, action items, and key strategic signals without losing the substance of the conversation.
+
+**What it does:**
+1. Cleans transcript noise and identifies speakers/topics
+2. Extracts decisions, action items, unresolved questions, and strategic themes
+3. Highlights stakeholder concerns, alignment, and follow-up needs
+4. Formats the result into a reusable meeting note
+
+**Output location:** `03-professional/meetings/meeting-transcript-YYYY-MM-DD-[slug].md`
+
+---
+
+### /comprehensive-analysis
+
+**Description:** Run a deep 7-day product, team, and strategy analysis for weekly reviews, board prep, or planning.
+
+**Triggers:**
+- `/comprehensive-analysis`
+- "weekly analysis"
+- "board prep"
+- "comprehensive analysis"
+- "deep weekly review"
+
+**Purpose:** Synthesize the last week across product, engineering, customer signals, and strategy into a single high-signal analysis for leaders.
+
+**What it does:**
+1. Reviews recent team briefs, meetings, project artifacts, and external signals
+2. Identifies what shipped, what changed, what is blocked, and what needs leadership attention
+3. Surfaces trends, risks, opportunities, and recommended actions
+4. Produces an executive-ready synthesis with confidence levels and open questions
+
+**Output location:** `03-professional/analysis/comprehensive-analysis-YYYY-MM-DD.md`
+
+---
+
 ### /update-cog
 
 **Description:** Check for and apply upstream COG framework updates without touching personal content.
@@ -420,10 +490,48 @@ The following 6 skills form a complete product management lifecycle:
 
 ---
 
+## Worker Agents
+
+COG includes 6 specialized worker agents (`.claude/agents/`) that handle data-heavy tasks using Sonnet while the lead session (Opus) handles reasoning and synthesis. Inspired by [garrytan/gstack](https://github.com/garrytan/gstack) specialist sessions and [garrytan/gbrain](https://github.com/garrytan/gbrain) knowledge patterns.
+
+| Agent | What it does | When it's used |
+|---|---|---|
+| **worker-data-collector** | Structured extraction from GitHub, Slack, Jira, Linear, or files | Team briefs, issue audits, data gathering |
+| **worker-researcher** | Web research with source citations and evidence | Auto-research threads, daily brief sourcing |
+| **worker-file-ops** | Vault reads/writes, metadata, profile updates | Knowledge consolidation, profile maintenance |
+| **worker-executor** | Pre-approved mutations (Jira transitions, Linear updates) | Team brief sync-back, issue management |
+| **worker-publisher** | Publishing to Slack, Confluence, Notion, webhooks | Brief publishing, wiki sync |
+| **brief-people-updater** | Batch-update people profiles from meetings/briefs | After team briefs, meeting processing |
+
+**Key rule:** Workers write results to `/tmp/{task-slug}.md` and return only a short status + file path. The lead session reads the file for synthesis.
+
+---
+
+## People CRM
+
+COG tracks the people you work with using progressive, evidence-based profiles stored in `05-knowledge/people/`.
+
+**Profile structure:** Each person has a two-layer file:
+1. **Compiled Truth** (top) — current best understanding, updated as evidence changes
+2. **Timeline** (bottom) — append-only dated entries with source citations
+
+**Tiered enrichment** — profiles auto-escalate:
+- **Tier 3 (Stub):** 1 mention → name, role, one-line context
+- **Tier 2 (Moderate):** 3+ mentions → executive snapshot, working style, strengths
+- **Tier 1 (Full):** 8+ mentions or direct meeting → complete profile
+
+**Citation format:** Every observation must include:
+`[Source: [[path/to/source-note]] | YYYY-MM-DD | confidence: high|medium|low]`
+
+Create profiles manually using the template at `06-templates/people-profile-template.md` or run the `brief-people-updater` agent for batch updates.
+
+---
+
 ## Vault Structure
 
 ```
 COG-second-brain/
+├── .claude/agents/        # Worker agent definitions (6)
 ├── .claude/roles/         # Role packs for personalized recommendations
 ├── 00-inbox/              # Landing zone, profile files
 │   ├── MY-PROFILE.md      # User profile with role pack (created by onboarding)
@@ -446,9 +554,10 @@ COG-second-brain/
 ├── 05-knowledge/          # Consolidated knowledge
 │   ├── consolidated/      # Frameworks and reports
 │   ├── patterns/          # Identified patterns
+│   ├── people/            # People CRM profiles
 │   ├── timeline/          # Thinking evolution
 │   └── booklets/          # URL bookmarks by category
-└── 06-templates/          # Document templates
+└── 06-templates/          # Document templates (incl. people profile)
 ```
 
 ---
@@ -489,9 +598,10 @@ Available packs: Product Manager, Engineering Lead, Engineer, Designer, Founder,
 
 ## Version & Updates
 
-COG tracks its version in `COG-VERSION` (currently 3.3.0). To check for updates:
+COG tracks its version in `COG-VERSION` (currently 3.5.0). To check for updates:
 - Run `/update-cog` in any supported agent
 - Or use the shell script: `./cog-update.sh --check`
+- Validate packaged agent surfaces with `./scripts/validate-agent-surface.sh`
 
 Updates only touch framework files (skills, docs, scripts) — your personal content is never modified.
 

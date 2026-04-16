@@ -41,13 +41,22 @@ We welcome ideas for new features or improvements:
    - Add a changelog entry in `CHANGELOG.md`
    - If adding a new file, add it to the `FRAMEWORK_FILES` array in `cog-update.sh`
    - Update `marketplace-entry.json` and `.claude-plugin/plugin.json` version fields
+   - Keep the support matrix truthful in `README.md`, `SETUP.md`, `AGENTS.md`, and `docs/AGENT-SUPPORT.md`
+   - Run `./scripts/validate-agent-surface.sh` before opening the PR
 
 #### Making Changes
 
-1. **Skills**: New skills should be added in all supported formats:
-   - `.claude/skills/[name]/SKILL.md` - Claude Code format (include `roles` and `integrations` in frontmatter)
-   - `.kiro/powers/cog-[name]/POWER.md` - Kiro format
-   - Update `agents.md` - Universal documentation
+1. **Worker Agents**: New agents should be added to `.claude/agents/` with this format:
+   - YAML frontmatter with `name`, `description`, and `model` (use `sonnet` for I/O tasks, `opus` only if reasoning is required)
+   - Clear capability list and output rule
+   - Add the file to `FRAMEWORK_FILES` in `cog-update.sh`
+   - Document in `AGENTS.md` under "Worker Agents"
+2. **Skills**: New skills should be added in every surface that claims to support them:
+   - `.claude/skills/[name]/SKILL.md` - Claude Code format (required; include `roles` and `integrations` in frontmatter)
+   - `AGENTS.md` - Universal documentation (required)
+   - `.claude-plugin/plugin.json` - Packaged skill manifest (required)
+   - `.kiro/powers/cog-[name]/POWER.md` - Kiro format (if Kiro supports the skill)
+   - `.gemini/commands/[name].toml` + `.gemini/skills/[name].md` - Gemini CLI format (if Gemini supports the skill)
    - If the skill is role-specific, add it to relevant role packs in `.claude/roles/`
 2. **Templates**: Follow existing YAML frontmatter conventions
 3. **Documentation**: Update README.md if adding major features
@@ -68,6 +77,7 @@ Before submitting:
 2. Ensure it works with existing commands
 3. Verify it doesn't break existing functionality
 4. Check that documentation is accurate
+5. Run `./scripts/validate-agent-surface.sh` for packaging/manifest consistency
 
 #### Submitting
 
@@ -152,7 +162,30 @@ keywords: ["keyword1", "keyword2", "keyword3"]
 [Step-by-step process]
 ```
 
-### Universal Documentation (`agents.md`)
+### Worker Agents (`.claude/agents/[name].md`)
+
+```markdown
+---
+name: worker-name
+description: What this worker does
+model: sonnet
+---
+
+You are a [role]. Your job is [single responsibility].
+
+## Capabilities
+- **Source**: What it can access
+
+## Output Rule
+- Always write results to `/tmp/{task-slug}.md`
+- Return ONLY a short status + file path
+
+## Rules
+- Never fabricate data
+- [domain-specific rules]
+```
+
+### Universal Documentation (`AGENTS.md`)
 
 Add new skills under "## Available Commands" with:
 - Command name and triggers

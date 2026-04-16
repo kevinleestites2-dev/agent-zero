@@ -7,6 +7,7 @@
 #   ./cog-update.sh --check    Check for available updates (no changes)
 #   ./cog-update.sh --dry-run  Show what would change (no changes)
 #   ./cog-update.sh --force    Update all framework files without prompting
+#   ./cog-update.sh --validate Run packaging validator only
 #   ./cog-update.sh --help     Show this help message
 
 set -euo pipefail
@@ -16,6 +17,7 @@ REMOTE_NAME="cog-upstream"
 REMOTE_URL="https://github.com/huytieu/COG-second-brain.git"
 BRANCH="main"
 VERSION_FILE="COG-VERSION"
+VALIDATOR_SCRIPT="scripts/validate-agent-surface.sh"
 
 # Framework files — these are safe to overwrite (your content is never in this list)
 FRAMEWORK_FILES=(
@@ -29,6 +31,9 @@ FRAMEWORK_FILES=(
   "LICENSE"
   "COG-VERSION"
   "cog-update.sh"
+  "docs/AGENT-SUPPORT.md"
+  ".github/MARKETPLACE.md"
+  "scripts/validate-agent-surface.sh"
 
   # Claude Code skills
   ".claude/skills/onboarding/SKILL.md"
@@ -57,6 +62,18 @@ FRAMEWORK_FILES=(
   ".claude/roles/designer.md"
   ".claude/roles/founder.md"
   ".claude/roles/marketer.md"
+
+  # Worker agents
+  ".claude/agents/worker-data-collector.md"
+  ".claude/agents/worker-researcher.md"
+  ".claude/agents/worker-file-ops.md"
+  ".claude/agents/worker-executor.md"
+  ".claude/agents/worker-publisher.md"
+  ".claude/agents/brief-people-updater.md"
+
+  # People CRM
+  "05-knowledge/people/README.md"
+  "06-templates/people-profile-template.md"
 
   # Framework config
   "CLAUDE.md"
@@ -119,13 +136,16 @@ Usage:
   ./cog-update.sh --check    Check for available updates (no changes)
   ./cog-update.sh --dry-run  Show what would change (no changes)
   ./cog-update.sh --force    Update all framework files without prompting
+  ./cog-update.sh --validate Run packaging validator only
   ./cog-update.sh --help     Show this help message
 
 How it works:
   1. Adds/fetches the upstream remote (cog-upstream)
   2. Compares each framework file against the upstream version
   3. Offers to update changed files (interactive mode) or updates all (--force)
-  4. Your content folders (00-inbox, 01-daily, etc.) are NEVER modified
+  4. Warns if your working tree is already dirty before replacing framework files
+  5. Runs the packaging validator after updates when available
+  6. Your content folders (00-inbox, 01-daily, etc.) are NEVER modified
 
 Safe to run anytime — your notes, profiles, and braindumps are never touched.
 EOF
@@ -188,16 +208,44 @@ backup_file() {
   fi
 }
 
+worktree_is_dirty() {
+  [[ -n "$(git status --porcelain)" ]]
+}
+
+warn_if_dirty() {
+  if worktree_is_dirty; then
+    warn "Your working tree has uncommitted changes. Framework updates are still safe, but review carefully before committing."
+  fi
+}
+
+run_validator() {
+  if [[ -x "$VALIDATOR_SCRIPT" ]]; then
+    echo ""
+    info "Running ${BOLD}${VALIDATOR_SCRIPT}${RESET}..."
+    if "$VALIDATOR_SCRIPT"; then
+      ok "Packaging validation passed"
+      return 0
+    else
+      warn "Packaging validation reported issues. Review before committing."
+      return 1
+    fi
+  else
+    warn "Validator not found at ${VALIDATOR_SCRIPT}; skipping packaging validation"
+    return 0
+  fi
+}
+
 # ── Main logic ───────────────────────────────────────────────────────
 main() {
   local mode="interactive"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --check)   mode="check";   shift ;;
-      --dry-run) mode="dry-run"; shift ;;
-      --force)   mode="force";   shift ;;
-      --help|-h) usage; exit 0 ;;
+      --check)    mode="check";    shift ;;
+      --dry-run)  mode="dry-run";  shift ;;
+      --force)    mode="force";    shift ;;
+      --validate) mode="validate"; shift ;;
+      --help|-h)  usage; exit 0 ;;
       *) err "Unknown option: $1"; usage; exit 1 ;;
     esac
   done
@@ -206,6 +254,11 @@ main() {
   if ! git rev-parse --is-inside-work-tree &>/dev/null; then
     err "Not inside a git repository. Run this from your COG folder."
     exit 1
+  fi
+
+  if [[ "$mode" == "validate" ]]; then
+    run_validator
+    exit $?
   fi
 
   echo ""
@@ -222,6 +275,11 @@ main() {
   info "Local version:    ${BOLD}${lv}${RESET}"
   info "Upstream version: ${BOLD}${uv}${RESET}"
   echo ""
+
+  if [[ "$mode" == "interactive" || "$mode" == "force" ]]; then
+    warn_if_dirty
+    [[ -n "$(git status --porcelain)" ]] && echo ""
+  fi
 
   if [[ "$uv" == "unknown" ]]; then
     err "Could not read upstream version. Check your internet connection."
@@ -297,6 +355,7 @@ main() {
     echo ""
     ok "Updated ${updated} file(s) to v${uv}"
     info "Backups saved as *.backup-YYYYMMDD-HHMMSS alongside originals"
+    run_validator || true
     exit 0
   fi
 
@@ -374,6 +433,7 @@ main() {
   echo ""
 
   if [[ $updated -gt 0 ]]; then
+    run_validator || true
     info "Review changes with ${BOLD}git diff${RESET}, then commit when ready:"
     echo "  git add -A && git commit -m \"Update COG framework to v${uv}\""
   fi

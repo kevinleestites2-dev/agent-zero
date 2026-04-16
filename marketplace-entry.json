@@ -6,6 +6,6 @@
     "email": "tqhuy1991@gmail.com",
     "url": "https://github.com/huytieu"
   },
-  "description": "Self-evolving second brain with AI agents for knowledge management",
-  "version": "3.4.0"
+  "description": "Self-evolving second brain with multi-agent surfaces for Claude Code, Kiro, Gemini CLI, and AGENTS-compatible assistants",
+  "version": "3.5.0"
 }

@@ -10,7 +10,9 @@
 graph LR
     A[You] -- natural language --> B[AI Agent]
     B -- runs --> C[17 Skills]
+    C -- delegates to --> W[6 Worker Agents]
     C -- reads & writes --> D[.md Files]
+    W -- reads & writes --> D
     C -- syncs with --> G[GitHub / Linear / Slack / PostHog]
     D --> E[Git]
     D --> F[iCloud]
@@ -37,6 +39,19 @@ cd COG-second-brain
 | Other agents | Point at `AGENTS.md` → "Run onboarding" | `AGENTS.md` |
 
 Done — COG is personalized and ready in ~2 minutes. See [SETUP.md](SETUP.md) for optional config (Git sync, iCloud, Obsidian Tasks, etc.).
+
+## Agent Support Matrix
+
+COG ships a **full Claude Code surface** plus **core native surfaces** for Kiro and Gemini CLI, with `AGENTS.md` as the universal fallback for Codex and other markdown-reading agents.
+
+| Surface | Current support | Notes |
+|---|---|---|
+| Claude Code | 17 native skills | Full first-class surface |
+| Kiro | 7 native powers | Core workflows today |
+| Gemini CLI | 7 native commands | Core workflows today |
+| `AGENTS.md` | 17 documented commands | Universal fallback for Codex and other agents |
+
+Before publishing or updating framework files, run `./scripts/validate-agent-surface.sh` to catch drift between manifests, docs, and shipped files. See [docs/AGENT-SUPPORT.md](docs/AGENT-SUPPORT.md) for the detailed support matrix and contributor rules.
 
 ## Skills
 
@@ -78,6 +93,31 @@ Done — COG is personalized and ready in ~2 minutes. See [SETUP.md](SETUP.md) f
 | Skill | What it does | Try saying... |
 |---|---|---|
 | **auto-research** | Deep strategic research engine — decomposes questions into parallel research threads with multiple agents | "Research the future of AI testing tools" |
+
+### Worker Agents (Specialist Sessions)
+
+COG uses a worker agent architecture inspired by [garrytan/gstack](https://github.com/garrytan/gstack) specialist sessions and [garrytan/gbrain](https://github.com/garrytan/gbrain) knowledge patterns. Workers handle data-heavy tasks cheaply (Sonnet) while the lead session does reasoning (Opus).
+
+| Agent | What it does | Model |
+|---|---|---|
+| **worker-data-collector** | Structured extraction from GitHub, Slack, Jira, Linear | Sonnet |
+| **worker-researcher** | Web research with source citations | Sonnet |
+| **worker-file-ops** | Vault file operations, metadata, profiles | Sonnet |
+| **worker-executor** | Pre-approved mutations (Jira, Linear, APIs) | Sonnet |
+| **worker-publisher** | Publishing to Slack, Confluence, Notion | Sonnet |
+| **brief-people-updater** | Batch-update people profiles from meetings/briefs | Sonnet |
+
+> Workers write results to `/tmp/` files and return only a status + path. The lead reads the file for synthesis. This eliminates slow token generation in agent output.
+
+### People CRM (Knowledge-Based Team Profiles)
+
+Track the people you work with using progressive, evidence-based profiles in `05-knowledge/people/`. Profiles auto-escalate via tiered enrichment:
+
+- **Tier 3 (Stub)** — 1 mention: name, role, one-line context
+- **Tier 2 (Moderate)** — 3+ mentions: executive snapshot, working style, strengths
+- **Tier 1 (Full)** — 8+ mentions or direct meeting: complete profile with all sections
+
+Every observation includes a source citation with confidence level. See `05-knowledge/people/README.md` for details.
 
 ### Role Packs (Personalized Recommendations)
 
@@ -126,6 +166,7 @@ graph TD
 ```
 COG-second-brain/
 ├── .claude/skills/          # Claude Code skills (17)
+├── .claude/agents/          # Worker agent definitions (6)
 ├── .claude/roles/           # Role packs (7) — personalized recommendations
 ├── .kiro/powers/            # Kiro powers
 ├── .gemini/commands/        # Gemini CLI commands
@@ -136,7 +177,9 @@ COG-second-brain/
 ├── 02-personal/             # Personal braindumps (private)
 ├── 03-professional/         # Professional braindumps & strategy
 ├── 04-projects/             # Per-project tracking
-└── 05-knowledge/            # Consolidated insights & patterns
+├── 05-knowledge/            # Consolidated insights & patterns
+│   └── people/              # People CRM profiles
+└── 06-templates/            # Document templates
 ```
 
 > **Real-world results:** 120+ braindumps processed, daily briefs with 95%+ source accuracy, 5 major strategic insights discovered — zero maintenance required.
@@ -151,7 +194,8 @@ COG separates **framework files** (skills, docs, scripts) from **your content** 
 | Shell script | `./cog-update.sh` (interactive) &bull; `--check` &bull; `--dry-run` &bull; `--force` |
 | Manual Git | `git fetch cog-upstream main` then checkout specific files |
 
-Check your version: `cat COG-VERSION`
+Check your version: `cat COG-VERSION`  
+Validate packaged surfaces: `./scripts/validate-agent-surface.sh`
 
 ## FAQ
 
@@ -191,6 +235,7 @@ Git is optional but recommended for version history. COG works fine with just iC
 - [x] ~~Upstream update system~~ (shipped in v3.2)
 - [x] ~~Role packs & integration discovery~~ (shipped in v3.3)
 - [x] ~~PM workflow skills & auto-research~~ (shipped in v3.4)
+- [x] ~~Worker agents, people CRM & specialist sessions~~ (shipped in v3.5)
 - [ ] Web interface for knowledge graph visualization
 - [ ] Mobile-first commands (optimized for Obsidian mobile)
 - [ ] Team collaboration features (with privacy preservation)
