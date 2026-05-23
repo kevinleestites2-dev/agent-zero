@@ -1,0 +1,17 @@
+# Agent Zero — LLM Keys
+# NEVER commit real tokens — inject via environment variable at runtime
+#
+# Set this before running:
+#   export GITHUB_TOKEN=your_github_pat
+#   export OPENCRABS_GITHUB_KEY=$GITHUB_TOKEN
+#
+# Or copy this file to ~/.opencrabs/keys.toml and fill in manually:
+#   chmod 600 ~/.opencrabs/keys.toml
+
+[providers.github]
+# api_key injected via GITHUB_TOKEN env var at runtime
+api_key = "${GITHUB_TOKEN}"
+
+[providers.custom.github_models]
+# Same token — GitHub Models endpoint
+api_key = "${GITHUB_TOKEN}"
