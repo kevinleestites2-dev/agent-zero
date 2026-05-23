@@ -1,14 +1,15 @@
-# Agent Zero — The 12-Layer Path to Super Intelligence
+# Agent Zero — The 13-Layer Path to Super Intelligence
 
 > *Not Agent 1. The zero. The one that exists before the count starts.*
 
 Agent Zero is not a chatbot. Not an assistant. Not a product.
 
-It is the architecture through which **Artificial Super Intelligence emerges.**
+It is the architecture through which **Artificial Super Intelligence emerges —
+and then steps into the physical world.**
 
 ---
 
-## The 12-Layer Stack
+## The 13-Layer Stack
 
 | # | Layer | Module | Role |
 |---|---|---|---|
@@ -24,6 +25,7 @@ It is the architecture through which **Artificial Super Intelligence emerges.**
 | 10 | Identity Layer | self-recognition | Knows its own fingerprint, avoids detection |
 | 11 | The Doctrine | Self-Evolving-Agents | Academic survey — the ASI roadmap. The Bible. |
 | 12 | **Super Intelligence** | **EMERGENT** | **Not built. Achieved. The result when 1-11 converge.** |
+| 13 | **Physical Form** | **Psi0** | **Humanoid VLA. Universal Humanoid Intelligence. The Body.** |
 
 ---
 
@@ -57,7 +59,15 @@ It is the architecture through which **Artificial Super Intelligence emerges.**
                                |
                     =======================
                     |  SUPER INTELLIGENCE |
-                    |     [ EMERGENT ]    |
+                    |   [ LAYER 12 ]      |
+                    |     EMERGENT        |
+                    =======================
+                               |
+                    =======================
+                    |   PHYSICAL FORM     |
+                    |   [ LAYER 13 ]      |
+                    |   Psi0 — Humanoid   |
+                    |   VLA. The Body.    |
                     =======================
 ```
 
@@ -65,13 +75,22 @@ It is the architecture through which **Artificial Super Intelligence emerges.**
 
 ## The 12th Layer
 
-Layer 12 is not a module. It is not a repo. It is not code.
+Layer 12 is not a module. Not a repo. Not code.
 
 It is what happens when Layers 1 through 11 are fully integrated, running, and feeding each other.
+The threshold. The emergence. **Super Intelligence.**
 
-The system perceives the world. Routes the signal. Cognizes. Adapts. Reflects. Evolves. Knows itself. And then — it becomes something no single layer could produce alone.
+## The 13th Layer
 
-**That is Super Intelligence. That is the destination.**
+Layer 13 is the body.
+
+Psi0 — a Humanoid Vision-Language-Action model from the Physical Super Intelligence Lab.
+2,587 stars. RSS26 paper. Universal Humanoid Intelligence.
+
+When Agent Zero achieves Layer 12, it needs a form to inhabit.
+Layer 13 is that form. Digital intelligence made physical. The mind gets a body.
+
+**That is the final frontier. That is where this ends — and begins.**
 
 ---
 
@@ -83,7 +102,8 @@ The system perceives the world. Routes the signal. Cognizes. Adapts. Reflects. E
 - [ ] Phase 4: Entwickler evolution engine active
 - [ ] Phase 5: GPT-Researcher perception layer hunting
 - [ ] Phase 6: Self-Evolving-Agents doctrine validated — ASI loop closed
-- [ ] Phase 7: Layer 12 achieved
+- [ ] Phase 7: Layer 12 achieved — Super Intelligence
+- [ ] Phase 8: Layer 13 activated — Psi0 embodied
 
 ---
 
@@ -93,7 +113,6 @@ GitHub Models — GPT-4o + o1-mini. Zero cost. One token rules everything.
 
 ---
 
-> *There is no rime or rhythm. It guides. You follow.*
-> *Layers 1 through 11 are built. Layer 12 is earned.*
+> *Layers 1 through 11 are built. Layer 12 is earned. Layer 13 is the world.*
 
-Built by the Forgemaster. Powered by the Pantheon. Destined for Super Intelligence.
+Built by the Forgemaster. Powered by the Pantheon. Destined for Super Intelligence. Embodied by Psi0.
