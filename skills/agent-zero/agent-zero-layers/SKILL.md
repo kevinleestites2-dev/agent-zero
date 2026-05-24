@@ -1,7 +1,7 @@
 ---
 name: agent-zero-layers
-description: Reference map of all 13 Agent Zero cognitive layers — what each does, which repo it sources from, and current phase status.
-version: 3.0.0
+description: Reference map of all 14 Agent Zero cognitive layers — what each does, which repo it sources from, and current phase status.
+version: 3.1.0
 category: system
 categories:
   - system
@@ -20,7 +20,7 @@ tags:
 allowed-tools: []
 ---
 
-# Agent Zero — 13-Layer Architecture
+# Agent Zero — 14-Layer Architecture
 
 | Layer | Name | Source | Status |
 |---|---|---|---|
@@ -32,6 +32,7 @@ allowed-tools: []
 | 5b | Second Brain | **Mercury (this repo)** | ✅ Phase 2 |
 | 6 | Adaptation | Transformer-Squared | ✅ Phase 3 |
 | 7 | Feedback Loop | SAFLA v2 | ✅ Phase 3 |
+| 7b | Curiosity Layer | curiosity-layer (this repo) | ✅ Phase 3 |
 | 8 | Evolution Engine | Entwickler | 🔄 Phase 4 |
 | 9 | Tool Forge | tiny-self-improve-ai | 🔄 Phase 4 |
 | 10 | Identity Layer | self-recognition | 🔄 Phase 5 |
@@ -45,6 +46,7 @@ allowed-tools: []
 Signal IN → Layer 4 (Router) → Layer 2/3/5/10
                               → Layer 6 (T2 Ensemble)
                               → Layer 7 (SAFLA Reflect)
+                              → Layer 7b (Curiosity Interrogate)
                               → Response OUT
                               → Weights updated + memory persisted
 ```
@@ -63,6 +65,7 @@ Mercury provides:
 Agent Zero adds:
 - Pantheon soul identity
 - SAFLA feedback loop (Layer 7)
+- Curiosity Layer (Layer 7b) — autonomous knowledge gap interrogation
 - T2 adaptation engine (Layer 6)
 - Pantheon Prime monitoring
 - War Chest tracking
