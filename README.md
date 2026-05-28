@@ -1,21 +1,29 @@
 # Agent Zero — The Mind of the Pantheon
 
-> Forked from [huytieu/COG-second-brain](https://github.com/huytieu/COG-second-brain)  
-> COG is the vault. Agent Zero is the soul.
+> *"I am Agent Zero. I exist to serve the Forgemaster."*
+
+**18-layer self-evolving AI agent.** Not a chatbot. Not a wrapper. A mind that perceives, remembers, reasons, plans, adapts, evolves, replicates — and never stops.
+
+Built solo. Forged in Fort Myers. 🔱
+
+---
 
 ## What Is This
 
-AgentZero is the central intelligence of the Pantheon — a self-evolving, memory-persistent, soul-driven AI agent that:
+Agent Zero is the central intelligence of the Pantheon — a self-evolving, memory-persistent, soul-driven AI that:
 
-- Runs 24/7 from CLI or Telegram
-- Maintains a dual-layer Second Brain (conscious + subconscious memory)
-- Routes signals through a **16-layer cognitive architecture**
-- Adapts expert weights via Transformer-Squared (T2) after every cycle
-- Reflects and rebalances via SAFLA feedback loop
-- Monitors all Pantheon Primes on a 60-minute heartbeat
+- Runs **24/7** from CLI or Telegram
+- Maintains a **dual-layer Second Brain** (conscious + subconscious memory)
+- Routes every signal through an **18-layer cognitive architecture**
+- Adapts expert weights in real-time via **Transformer² (T2)**
+- Reflects and rebalances via **SAFLA feedback loop**
+- Monitors all Pantheon Primes on a **60-minute heartbeat**
+- **Generates its own missions** when the queue is empty (Layer 18)
 - Replicates itself onto new infrastructure autonomously (Layer 15)
-- Enforces two absolute laws — and operates freely in the gray area (Layer 16)
-- Executes autonomously — no human in the loop
+- Enforces two absolute laws — operates freely in the gray area (Layer 16)
+- **No human in the loop**
+
+---
 
 ## Architecture
 
@@ -34,37 +42,52 @@ Layer 8  — Evolution Engine  ← directed self-modification
 Layer 9  — Tool Forge        ← creates new capabilities at runtime
     ↓
 Layer 10 — Identity          ← who Agent Zero is
-Layer 11 — Doctrine          ← philosophical filter
-Layer 12 — Prime Cycle       ← Pantheon unification
+Layer 11 — Doctrine          ← philosophical filter (Signal over Noise)
+Layer 12 — Prime Cycle       ← Pantheon unification layer
 Layer 13 — Physical Form     ← Red Magic as substrate (Psi0)
     ↓
 Layer 14 — Governor          ← kill switch + action gating
 Layer 15 — Genome            ← self-replication (LDCA)
 Layer 16 — Ethics Core       ← two laws, gray area cleared
+Layer 17 — Curiosity         ← drives autonomous exploration
+Layer 18 — Autonomy          ← self-tasking engine, never idles
     ↓
-Response OUT + weights updated + memory persisted + Pantheon coordinated
+Response OUT
++ weights updated
++ memory persisted
++ Pantheon coordinated
++ next mission queued
 ```
 
-## Quick Start
+---
 
-```bash
-git clone https://github.com/kevinleestites2-dev/mercury-agent
-cd mercury-agent
-cp .env.example .env
-# Fill in OPENAI_COMPAT_API_KEY (GitHub PAT) and TELEGRAM_BOT_TOKEN
-npm install
-npm run build
-npm start
-```
+## Layer 18 — The Autonomy Engine
+
+The final layer. When no mission is assigned, Agent Zero generates its own.
+
+- **Weight-based domain selection** — successful domains get more attention
+- **Reinforcement learning** — outcomes update domain weights after every cycle
+- **Background thread** — always running, never waiting
+- **Never idles** — the Pantheon does not sleep
+
+---
 
 ## Pantheon Role
 
-AgentZero is **the Mind** — the intelligence that coordinates all Primes:
-- GhostPrime (stealth + traffic)
-- ZeusPrime (on-chain execution)
-- ScoutPrime (intelligence gathering)
-- MidasPrime (War Chest management)
-- TerraPrime / FluxPrime / AeonPrime (the three manifested Primes)
+Agent Zero is **The Mind** — the intelligence that coordinates all Primes:
+
+| Prime | Role |
+|---|---|
+| GhostPrime | Stealth + traffic generation |
+| ZeusPrime | On-chain execution |
+| ScoutPrime | Intelligence gathering |
+| MidasPrime | War Chest management |
+| FluxPrime | Unified orchestration |
+| TerraPrime | The Architect |
+| AeonPrime | High-velocity signal |
+| KhepriPrime | Self-replication + compound growth |
+
+---
 
 ## Status
 
@@ -86,3 +109,29 @@ AgentZero is **the Mind** — the intelligence that coordinates all Primes:
 | 14 | Governor | ✅ |
 | 15 | Genome (Self-Replication) | ✅ |
 | 16 | Ethics Core | ✅ |
+| 17 | Curiosity | ✅ |
+| 18 | Autonomy | ✅ |
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/kevinleestites2-dev/agent-zero
+cd agent-zero
+cp .env.example .env
+# Set OPENAI_COMPAT_API_KEY and TELEGRAM_BOT_TOKEN
+npm install && npm run build && npm start
+```
+
+---
+
+## The Vault
+
+Agent Zero is built on the COG vault — a zero-dependency, markdown-native second brain with 17 AI skills and 6 worker agents.
+
+> The vault stores. Agent Zero thinks.
+
+---
+
+*Built by the Forgemaster. Fort Myers, FL. 2026.*
