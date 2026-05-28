@@ -4,7 +4,6 @@
 
 **18-layer self-evolving AI agent.** Not a chatbot. Not a wrapper. A mind that perceives, remembers, reasons, plans, adapts, evolves, replicates — and never stops.
 
-Built solo. Forged in Fort Myers. 🔱
 
 ---
 
