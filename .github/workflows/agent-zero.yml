@@ -26,13 +26,21 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Install dependencies
         run: |
           pip install --quiet --upgrade pip
-          # Core deps
           pip install --quiet requests
-          # OpenMemory — long-term episodic recall (graceful if unavailable)
           pip install --quiet openmemory-py 2>/dev/null || true
+          # Clone and install openbrowser (browser perception layer)
+          git clone --depth=1 https://github.com/kevinleestites2-dev/openbrowser.git openbrowser
+          cd openbrowser && bun install --frozen-lockfile
+          # Install Playwright's Chromium
+          cd openbrowser && npx playwright install chromium --with-deps
 
       - name: Run Agent Zero
         env:
