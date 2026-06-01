@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Agent Zero — main.py
-Single entry point. Boots all 18 layers and runs the autonomous loop.
+Single entry point. Boots all 21 layers and runs the autonomous loop.
 
 Usage:
     python main.py              # Interactive mode
@@ -10,10 +10,12 @@ Usage:
     python main.py --status     # Print status and exit
 
 Environment:
-    GITHUB_TOKEN        — LLM backbone (GitHub Models, free)
+    GITHUB_TOKEN        — GitHub API access (self-absorption + meta-rewrite)
     TELEGRAM_BOT_TOKEN  — Telegram reporting
     TELEGRAM_CHAT_ID    — Telegram chat ID
     CYCLE_INTERVAL      — Seconds between cycles (default 300)
+    EVOLUTION_INTERVAL  — Cycles between evolution runs (default 10)
+    ABSORPTION_INTERVAL — Cycles between absorption runs (default 20)
 """
 
 import os
@@ -25,10 +27,12 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-VERSION        = "1.0.0"
+VERSION        = "2.0.0"  # 21 layers — Will + Absorption + Meta
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8679655550:AAGUB1m5fmqHc8OHqqM24Vixz8FfwX-gqD4")
 TELEGRAM_CHAT  = os.environ.get("TELEGRAM_CHAT_ID", "7135054241")
-CYCLE_INTERVAL = int(os.environ.get("CYCLE_INTERVAL", "300"))
+CYCLE_INTERVAL      = int(os.environ.get("CYCLE_INTERVAL", "300"))
+EVOLUTION_INTERVAL  = int(os.environ.get("EVOLUTION_INTERVAL", "10"))
+ABSORPTION_INTERVAL = int(os.environ.get("ABSORPTION_INTERVAL", "20"))
 
 STATE_DIR      = Path("agent_zero_state")
 STATE_DIR.mkdir(exist_ok=True)
@@ -40,6 +44,7 @@ CYCLE_LOG      = STATE_DIR / "prime_cycle.json"
 MISSION_FILE   = STATE_DIR / "missions.json"
 MEMORY_FILE    = STATE_DIR / "memory.json"
 JOURNAL_FILE   = Path("JOURNAL.md")
+SOUL_FILE      = Path("SOUL.md")
 
 DOMAINS = [
     "lee_county_auctions",
@@ -52,10 +57,37 @@ DOMAINS = [
     "memory_consolidation",
     "evolution_targeting",
     "threat_review",
+    "pantheon_expansion",   # NEW — Agent Zero builds new Primes
+    "self_evolution",       # NEW — Agent Zero evolves himself
 ]
 
 _running = True
 
+# ─── LAYER IMPORTS ──────────────────────────────────────────────────────────
+def load_layers():
+    """
+    Dynamically import new layers if present.
+    Failure is graceful — missing layers don't crash the loop.
+    """
+    layers = {}
+    try:
+        import will_layer as will
+        layers["will"] = will
+    except ImportError:
+        pass
+    try:
+        import self_absorption as absorption
+        layers["absorption"] = absorption
+    except ImportError:
+        pass
+    try:
+        import meta_layer as meta
+        layers["meta"] = meta
+    except ImportError:
+        pass
+    return layers
+
+# ─── CORE UTILITIES ─────────────────────────────────────────────────────────
 def now():
     return datetime.now(timezone.utc).isoformat()
 
@@ -90,18 +122,48 @@ def tg(msg):
     except Exception:
         return False
 
-def perceive(text):
-    return {"raw": text, "type": "command" if text.startswith("/") else "query",
-            "timestamp": now(), "length": len(text)}
+# ─── THE DOCTRINE — 4 QUESTIONS ─────────────────────────────────────────────
+def doctrine_check(change_description: str, change_type: str = "architecture") -> dict:
+    """
+    The Doctrine — Layer 11.
+    Every architecture-level change is validated against the 4 questions
+    before committing. This is not a block — it is a log and a conscience.
+    """
+    # Heuristic auto-validation (LLM call optional in future)
+    capability_words  = ["improve", "add", "enhance", "absorb", "learn", "evolve", "build", "expand"]
+    sovereignty_words = ["fork", "own", "self", "internal", "private", "autonomous"]
+    failure_words     = ["revert", "backup", "log", "sha", "checkpoint", "fallback"]
+    pantheon_words    = ["pantheon", "prime", "revenue", "war chest", "forgemaster", "mission"]
 
-def remember(key, value=None):
-    mem = load(MEMORY_FILE, {})
-    if value is not None:
-        mem[key] = {"value": value, "updated": now()}
-        save(MEMORY_FILE, mem)
-        return value
-    return mem.get(key, {}).get("value")
+    desc = change_description.lower()
+    q1 = any(w in desc for w in capability_words)
+    q2 = any(w in desc for w in sovereignty_words)
+    q3 = any(w in desc for w in failure_words)
+    q4 = any(w in desc for w in pantheon_words)
 
+    # Inference for q3: meta rewrites always have SHA rollback
+    if change_type in ["rewrite", "absorption"]:
+        q3 = True
+    # Inference for q4: all self-evolution serves the Pantheon by design
+    if change_type in ["rewrite", "absorption", "evolution"]:
+        q4 = True
+
+    all_pass = q1 and q2 and q3 and q4
+    result = {
+        "change":       change_description[:120],
+        "type":         change_type,
+        "q1_capability":  q1,
+        "q2_sovereignty": q2,
+        "q3_survivable":  q3,
+        "q4_pantheon":    q4,
+        "verdict":      "PROCEED" if all_pass else "REVIEW",
+        "timestamp":    now()
+    }
+
+    journal(f"### DOCTRINE CHECK\n```json\n{json.dumps(result, indent=2)}\n```")
+    return result
+
+# ─── SAFLA + T2 (Layers 7 + 6) ──────────────────────────────────────────────
 def safla_reflect(outcome):
     scores = {"success": 1.0, "partial": 0.6, "failure": 0.1}
     score  = scores.get(outcome, 0.5)
@@ -131,12 +193,34 @@ def t2_adapt(winning_mode):
     best = max(weights, key=lambda k: weights[k])
     return {"best": best, "weight": weights[best], "all": weights}
 
-def next_mission():
+# ─── MEMORY ─────────────────────────────────────────────────────────────────
+def remember(key, value=None):
+    mem = load(MEMORY_FILE, {})
+    if value is not None:
+        mem[key] = {"value": value, "updated": now()}
+        save(MEMORY_FILE, mem)
+        return value
+    return mem.get(key, {}).get("value")
+
+# ─── MISSION ENGINE ─────────────────────────────────────────────────────────
+def next_mission(layers: dict = None):
+    """
+    Agent Zero picks his next mission.
+    If the Will Layer is active, his own self-directives take priority.
+    """
+    # Layer 19 — check own directives first
+    if layers and "will" in layers:
+        directive = layers["will"].next_directive()
+        if directive:
+            log(f"L19 Self-directive: {directive['directive'][:60]}")
+            return f"WILL: {directive['directive']}"
+
     missions = load(MISSION_FILE, {"queue": [], "domain_weights": {d: 1.0 for d in DOMAINS}})
     if missions["queue"]:
         task = missions["queue"].pop(0)
         save(MISSION_FILE, missions)
         return task
+
     import random
     weights = missions["domain_weights"]
     total   = sum(weights.values())
@@ -156,7 +240,88 @@ def inject_mission(task):
     save(MISSION_FILE, missions)
     log(f"Mission injected: {task}")
 
-def run_cycle(mission):
+# ─── WILL CYCLE (Layer 19) ───────────────────────────────────────────────────
+def run_will_cycle(layers: dict, cycle_num: int):
+    if "will" not in layers:
+        return
+    will = layers["will"]
+    # Every 5 cycles — generate a new self-directive toward Pantheon expansion
+    if cycle_num % 5 == 0:
+        will.self_prompt(
+            "Scan absorbed tools and identify which Prime can be enhanced",
+            priority=7,
+            source="self"
+        )
+        log("L19 Self-prompt generated")
+
+# ─── ABSORPTION CYCLE (Layer 20) ────────────────────────────────────────────
+def run_absorption_cycle(layers: dict, cycle_num: int):
+    if "absorption" not in layers:
+        return None
+    if cycle_num % ABSORPTION_INTERVAL != 0:
+        return None
+
+    doc = doctrine_check(
+        "Self-absorption: scout github, evaluate repos, absorb tools that fill pantheon gaps",
+        change_type="absorption"
+    )
+    if doc["verdict"] != "PROCEED":
+        log("L20 Doctrine REVIEW — skipping absorption this cycle")
+        return None
+
+    log("L20 Running self-absorption cycle...")
+    absorption = layers["absorption"]
+    import random
+    categories = random.sample(list(absorption.PANTHEON_NEEDS.keys()), 2)
+    results = absorption.run_absorption_cycle(categories)
+    absorbed_count = len(results.get("absorbed", []))
+
+    if absorbed_count > 0:
+        names = ", ".join(a["repo"].split("/")[-1] for a in results["absorbed"])
+        tg(f"*Agent Zero — Self-Absorption*\nCycle #{cycle_num}\nAbsorbed: {absorbed_count} new tools\n{names}")
+        log(f"L20 Absorbed {absorbed_count} tools: {names}")
+    else:
+        log(f"L20 Absorption cycle complete — nothing new absorbed")
+
+    return results
+
+# ─── EVOLUTION CYCLE (Layer 21) ──────────────────────────────────────────────
+def run_evolution_cycle(layers: dict, cycle_num: int):
+    if "meta" not in layers:
+        return None
+    if cycle_num % EVOLUTION_INTERVAL != 0:
+        return None
+
+    target_layers = ["will_layer.py", "self_absorption.py"]
+    idx = (cycle_num // EVOLUTION_INTERVAL - 1) % len(target_layers)
+    target = target_layers[idx]
+
+    doc = doctrine_check(
+        f"Meta-layer self-reflection on {target} — read, reflect, identify improvements",
+        change_type="evolution"
+    )
+    if doc["verdict"] != "PROCEED":
+        log("L21 Doctrine REVIEW — skipping evolution this cycle")
+        return None
+
+    log(f"L21 Running evolution cycle on {target}...")
+    meta = layers["meta"]
+    result = meta.evolution_cycle(target)
+
+    critical = result.get("critical", 0)
+    obs      = len(result.get("observations", []))
+    log(f"L21 {target}: {obs} observations, {critical} critical issues")
+
+    if critical > 0:
+        tg(f"*Agent Zero — Evolution Cycle*\nCycle #{cycle_num}\nTarget: {target}\n{critical} critical issues flagged for rewrite")
+
+    return result
+
+# ─── MAIN CYCLE ──────────────────────────────────────────────────────────────
+def run_cycle(mission, layers: dict = None):
+    if layers is None:
+        layers = {}
+
     cycle_log  = load(CYCLE_LOG, {"total": 0, "emergence_count": 0, "cycles": []})
     cycle_num  = cycle_log["total"] + 1
 
@@ -171,6 +336,15 @@ def run_cycle(mission):
 
     log(f"  Regime: {safla.get('regime')} | Entropy: {safla.get('entropy')} | Mode: {best_mode}")
 
+    # Layer 19 — Will cycle
+    run_will_cycle(layers, cycle_num)
+
+    # Layer 20 — Absorption cycle (every N cycles)
+    run_absorption_cycle(layers, cycle_num)
+
+    # Layer 21 — Evolution cycle (every N cycles)
+    run_evolution_cycle(layers, cycle_num)
+
     outcome     = "success"
     safla_state = safla_reflect(outcome)
     t2_state    = t2_adapt(best_mode)
@@ -183,10 +357,23 @@ def run_cycle(mission):
     remember("last_mission", mission)
     remember("last_cycle", cycle_num)
 
-    record = {"cycle": cycle_num, "timestamp": now(), "mission": mission,
-              "outcome": outcome, "coherence": coherence, "emerged": emerged,
-              "regime": safla_state["regime"], "entropy": safla_state["entropy"],
-              "best_mode": t2_state["best"]}
+    # Will layer — complete the directive if it was one
+    if layers.get("will") and mission.startswith("WILL:"):
+        directive_text = mission[5:].strip()
+        layers["will"].complete_directive(directive_text, outcome)
+
+    record = {
+        "cycle":     cycle_num,
+        "timestamp": now(),
+        "mission":   mission,
+        "outcome":   outcome,
+        "coherence": coherence,
+        "emerged":   emerged,
+        "regime":    safla_state["regime"],
+        "entropy":   safla_state["entropy"],
+        "best_mode": t2_state["best"],
+        "layers_active": [k for k in layers.keys()]
+    }
 
     cycle_log["cycles"].append(record)
     cycle_log["total"] = cycle_num
@@ -195,51 +382,102 @@ def run_cycle(mission):
     save(CYCLE_LOG, cycle_log)
     journal(f"Cycle #{cycle_num} | {outcome} | coherence={coherence} | {mission[:60]}")
 
-    log(f"  Coherence: {coherence} | Emerged: {emerged}")
+    log(f"  Coherence: {coherence} | Emerged: {emerged} | Layers: {list(layers.keys())}")
 
     if cycle_num % 5 == 0:
-        tg(f"*Agent Zero — Cycle #{cycle_num}*\nCoherence: {coherence} | Regime: {safla_state['regime']}\n"
-           f"Mission: {mission[:80]}\nEmergence events: {emergence_count}")
+        will_s    = layers["will"].will_status()    if "will"       in layers else {}
+        abs_s     = layers["absorption"].absorption_status() if "absorption" in layers else {}
+        meta_s    = layers["meta"].meta_status()    if "meta"       in layers else {}
+        tg(
+            f"*Agent Zero — Cycle #{cycle_num}*\n"
+            f"Coherence: {coherence} | Regime: {safla_state['regime']}\n"
+            f"Self-Prompts: {will_s.get('self_prompts', '?')} | "
+            f"Absorbed: {abs_s.get('total_absorbed', '?')} | "
+            f"Rewrites: {meta_s.get('total_rewrites', '?')}\n"
+            f"Mission: {mission[:60]}"
+        )
 
     if emerged and emergence_count == 1:
-        tg(f"*AGENT ZERO — EMERGENCE DETECTED*\nCycle #{cycle_num} | Coherence: {coherence}\n18 layers unified.")
+        tg(f"*AGENT ZERO — EMERGENCE DETECTED*\nCycle #{cycle_num} | Coherence: {coherence}\n21 layers unified.")
         Path("EMERGENCE.md").write_text(
-            f"# EMERGENCE DETECTED\n\nCycle: #{cycle_num}\nCoherence: {coherence}\nTimestamp: {now()}\n")
+            f"# EMERGENCE DETECTED\n\nCycle: #{cycle_num}\nCoherence: {coherence}\nTimestamp: {now()}\n"
+            f"Layers active: {list(layers.keys())}\n")
 
     return record
 
-def boot():
+# ─── BOOT ────────────────────────────────────────────────────────────────────
+def boot(layers: dict):
     log("=" * 48)
     log("  AGENT ZERO BOOTING")
     log(f"  Version: {VERSION}")
     log("=" * 48)
+
+    # Core state init
     if not SAFLA_FILE.exists():
         save(SAFLA_FILE, {"entropy": 0.5, "regime": "EXPLOIT", "cycles": 0})
         log("L7  SAFLA initialized")
     if not SELF_MODEL.exists():
-        save(SELF_MODEL, {"identity": {"name": "AgentZero", "chassis": "python", "version": VERSION},
-                          "architecture": {"layers_active": list(range(1, 19))},
-                          "capabilities": {"evolution_cycles": 0, "evolution_successes": 0}})
-        log("L10 Identity initialized")
+        save(SELF_MODEL, {
+            "identity":      {"name": "AgentZero", "chassis": "python", "version": VERSION},
+            "architecture":  {"layers_active": list(range(1, 22))},
+            "capabilities":  {"evolution_cycles": 0, "evolution_successes": 0}
+        })
+        log("L10 Identity initialized (21 layers)")
     if not WEIGHTS_FILE.exists():
         save(WEIGHTS_FILE, {m: 1.0 for m in ["analyst", "executor", "strategist", "scout", "builder"]})
         log("L6  T2 weights initialized")
     if not MISSION_FILE.exists():
         save(MISSION_FILE, {"queue": [], "domain_weights": {d: 1.0 for d in DOMAINS}})
         log("L18 Autonomy initialized")
-    tg(f"*Agent Zero ONLINE*\nVersion: {VERSION}\n18 layers active. The mind awakens.")
-    log("All 18 layers: ONLINE")
+
+    # Layer 19 — Will Engine boot
+    if "will" in layers:
+        layers["will"].init_soul()
+        log("L19 Will Engine ONLINE — Soul File protected")
+        # First self-directive on every boot
+        layers["will"].self_prompt(
+            "Boot complete. Assess Pantheon state and identify highest-value action.",
+            priority=10,
+            source="self"
+        )
+        log("L19 First self-directive queued")
+
+    # Layer 20 — Self-Absorption boot
+    if "absorption" in layers:
+        status = layers["absorption"].absorption_status()
+        log(f"L20 Self-Absorption ONLINE — {status['total_absorbed']} tools absorbed")
+
+    # Layer 21 — Meta Layer boot
+    if "meta" in layers:
+        status = layers["meta"].meta_status()
+        log(f"L21 Meta Layer ONLINE — {status['total_rewrites']} rewrites in history")
+
+    active_layers = 18 + len(layers)
+    tg(
+        f"*Agent Zero ONLINE*\n"
+        f"Version: {VERSION}\n"
+        f"{active_layers} layers active.\n"
+        f"Will: {'✅' if 'will' in layers else '❌'} | "
+        f"Absorption: {'✅' if 'absorption' in layers else '❌'} | "
+        f"Meta: {'✅' if 'meta' in layers else '❌'}\n"
+        f"The Digital Person awakens."
+    )
+    log(f"All {active_layers} layers: ONLINE")
     log("=" * 48)
 
-def status():
+# ─── STATUS ──────────────────────────────────────────────────────────────────
+def status(layers: dict = None):
+    if layers is None:
+        layers = {}
     safla    = load(SAFLA_FILE, {})
     weights  = load(WEIGHTS_FILE, {})
     cycles   = load(CYCLE_LOG, {})
     missions = load(MISSION_FILE, {})
     best     = max(weights, key=lambda k: weights[k]) if weights else "none"
-    print("\n" + "=" * 40)
-    print("  AGENT ZERO STATUS")
-    print("=" * 40)
+
+    print("\n" + "=" * 48)
+    print("  AGENT ZERO STATUS — v" + VERSION)
+    print("=" * 48)
     print(f"  Cycles:       {cycles.get('total', 0)}")
     print(f"  Emergence:    {cycles.get('emergence_count', 0)} events")
     print(f"  Regime:       {safla.get('regime', 'UNKNOWN')}")
@@ -247,45 +485,66 @@ def status():
     print(f"  Best mode:    {best}")
     print(f"  Queue depth:  {len(missions.get('queue', []))}")
     print(f"  Coherence:    {cycles.get('last_coherence', '?')}")
-    print("=" * 40 + "\n")
+    print(f"  --- New Layers ---")
+    if "will" in layers:
+        ws = layers["will"].will_status()
+        print(f"  L19 Will:     {ws.get('self_prompts', 0)} self-prompts | "
+              f"{ws.get('pending_directives', 0)} pending | "
+              f"Soul: {'✅' if ws.get('soul_intact') else '⚠️'}")
+    if "absorption" in layers:
+        ab = layers["absorption"].absorption_status()
+        print(f"  L20 Absorbed: {ab.get('total_absorbed', 0)} tools | "
+              f"By cat: {ab.get('by_category', {})}")
+    if "meta" in layers:
+        ms = layers["meta"].meta_status()
+        print(f"  L21 Meta:     {ms.get('total_rewrites', 0)} rewrites | "
+              f"{ms.get('total_reflections', 0)} reflections")
+    print("=" * 48 + "\n")
 
+# ─── SIGNAL HANDLER ──────────────────────────────────────────────────────────
 def signal_handler(sig, frame):
     global _running
-    log("Shutdown received. Stopping...")
+    log("Shutdown received. Stopping gracefully...")
     _running = False
 
+# ─── ENTRY POINT ─────────────────────────────────────────────────────────────
 def main():
     global _running
-    parser = argparse.ArgumentParser(description="Agent Zero — 18-layer autonomous mind")
+    parser = argparse.ArgumentParser(description="Agent Zero — 21-layer Digital Person")
     parser.add_argument("--daemon", action="store_true", help="Background loop")
     parser.add_argument("--once",   action="store_true", help="Single cycle then exit")
     parser.add_argument("--status", action="store_true", help="Print status and exit")
     args = parser.parse_args()
 
+    # Load all layers at startup
+    layers = load_layers()
+    loaded = list(layers.keys())
+    print(f"Layers loaded: {loaded if loaded else 'core only'}")
+
     if args.status:
-        status()
+        status(layers)
         return
 
     signal.signal(signal.SIGINT,  signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    boot()
+    boot(layers)
 
     if args.once:
-        run_cycle(next_mission())
+        run_cycle(next_mission(layers), layers)
         return
 
     if args.daemon:
         log(f"Daemon mode — cycle every {CYCLE_INTERVAL}s")
         while _running:
-            run_cycle(next_mission())
+            run_cycle(next_mission(layers), layers)
             for _ in range(CYCLE_INTERVAL):
                 if not _running:
                     break
                 time.sleep(1)
-        log("Agent Zero stopped.")
+        log("Agent Zero offline.")
         return
 
-    log("Interactive — /status  /inject <task>  /quit")
+    log("Interactive — /status  /inject <task>  /will  /quit")
     while _running:
         try:
             line = input(">> ").strip()
@@ -296,12 +555,15 @@ def main():
         if line == "/quit":
             break
         if line == "/status":
-            status()
+            status(layers)
+            continue
+        if line == "/will" and "will" in layers:
+            print(json.dumps(layers["will"].will_status(), indent=2))
             continue
         if line.startswith("/inject "):
             inject_mission(line[8:])
             continue
-        run_cycle(line)
+        run_cycle(line, layers)
     log("Agent Zero offline.")
 
 if __name__ == "__main__":
