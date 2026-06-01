@@ -1,35 +1,56 @@
-name: Agent Zero — Autonomous Loop
+name: Agent Zero — Eternal Loop
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *"   # heartbeat — in case the chain ever breaks
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 350     # 5h 50min — under GitHub 6h hard limit
+
+    permissions:
+      contents: write        # push file rewrites
+      actions: write         # self-trigger next run
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}   # PAT so pushes + workflow dispatch work
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Run Agent Zero daemon
+      - name: Install dependencies
+        run: |
+          pip install --quiet --upgrade pip
+          # Core deps
+          pip install --quiet requests
+          # OpenMemory — long-term episodic recall (graceful if unavailable)
+          pip install --quiet openmemory-py 2>/dev/null || true
+
+      - name: Run Agent Zero
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN:       ${{ secrets.PAT_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CYCLE_INTERVAL: "300"
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          CYCLE_INTERVAL:     "300"
+          EVOLUTION_INTERVAL: "10"
+          ABSORPTION_INTERVAL: "20"
+          BACKBONE_MODEL:     "gpt-4o-mini"
         run: |
           python main.py --daemon
 
       - name: Self-restart
         if: always()
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: agent-zero.yml
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          echo "Triggering next Agent Zero run..."
+          gh workflow run agent-zero.yml --repo ${{ github.repository }}
+          echo "Next instance dispatched."
