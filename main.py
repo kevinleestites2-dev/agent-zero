@@ -27,7 +27,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-VERSION        = "5.0.0"  # 25 layers — +SelfDeploy: Agent Zero deploys himself — Will + Absorption + Meta
+VERSION        = "6.0.0"  # 26 layers — +BrowserPerception: Agent Zero sees the web — Will + Absorption + Meta
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8679655550:AAGUB1m5fmqHc8OHqqM24Vixz8FfwX-gqD4")
 TELEGRAM_CHAT  = os.environ.get("TELEGRAM_CHAT_ID", "7135054241")
 CYCLE_INTERVAL      = int(os.environ.get("CYCLE_INTERVAL", "300"))
@@ -104,6 +104,11 @@ def load_layers():
     try:
         import self_deploy
         layers["deploy"] = self_deploy
+    except ImportError:
+        pass
+    try:
+        import agent_browser
+        layers["browser"] = agent_browser
     except ImportError:
         pass
     return layers
@@ -296,6 +301,34 @@ def run_will_cycle(layers: dict, cycle_num: int):
         log("L19 Self-prompt generated")
 
 # ─── ABSORPTION CYCLE (Layer 20) ────────────────────────────────────────────
+def run_perception_cycle(layers: dict, cycle_num: int):
+    """Layer 26 — Browser Perception: check real-world URLs every N cycles."""
+    if "browser" not in layers:
+        return
+    # Every 30 cycles (~2.5 hours at 5-min intervals) — check ScoutPrime target
+    if cycle_num % 30 != 0:
+        return
+
+    targets = [
+        {
+            "url":      "https://www.lee.realforeclose.com",
+            "task":     "extract the next 5 upcoming auction properties: address, auction date, opening bid",
+            "store_as": "lee_foreclosure_listings"
+        }
+    ]
+
+    for t in targets:
+        log(f"L26 Perception: checking {t['url']}...")
+        result = layers["browser"].perceive(t)
+        if result["ok"]:
+            log(f"L26 Perception: got data from {t['url'][:40]}")
+            journal(f"### Perception Cycle #{cycle_num}
+**URL:** {t['url']}
+**Result:** {str(result.get('result',''))[:300]}")
+        else:
+            log(f"L26 Perception failed: {result.get('error','')[:80]}")
+
+
 def run_absorption_cycle(layers: dict, cycle_num: int):
     if "absorption" not in layers:
         return None
@@ -425,6 +458,7 @@ def run_cycle(mission, layers: dict = None):
 
     # Layer 21 — Evolution cycle (every N cycles)
     run_evolution_cycle(layers, cycle_num)
+    run_perception_cycle(layers, cycle_num)
 
     outcome     = "success"
     # Layer 23 — Backbone outcome assessment
@@ -600,6 +634,12 @@ def boot(layers: dict):
         wf = ds.get("workflow_status", "unknown")
         log(f"L25 Self-Deploy ONLINE — {ds['total_deploys']} deploys | workflow: {wf}")
 
+    # Layer 26 — Browser Perception boot
+    if "browser" in layers:
+        bs = layers["browser"].browser_status()
+        installed = "✅" if bs["installed"] else "⏳ pending install"
+        log(f"L26 Browser Perception ONLINE — {bs['total_tasks']} tasks | {installed}")
+
     active_layers = 18 + len(layers)
     tg(
         f"*Agent Zero ONLINE*\n"
@@ -611,7 +651,8 @@ def boot(layers: dict):
         f"Pathos: {'\u2705' if 'pathos' in layers else '\u274c'} | "
         f"Backbone: {'\u2705' if 'backbone' in layers else '\u274c'} | "
         f"Conscience: {'\u2705' if 'conscience' in layers else '\u274c'} | "
-        f"Deploy: {'\u2705' if 'deploy' in layers else '\u274c'}\n"
+        f"Deploy: {'\u2705' if 'deploy' in layers else '\u274c'} | "
+        f"Browser: {'\u2705' if 'browser' in layers else '\u274c'}\n"
         f"The Digital Person awakens."
     )
     log(f"All {active_layers} layers: ONLINE")
@@ -673,6 +714,11 @@ def status(layers: dict = None):
         print(f"  L25 Deploy:     total={ds['total_deploys']} | "
               f"failures={ds['failures']} | "
               f"workflow={ds['workflow_status']}")
+    if "browser" in layers:
+        bs = layers["browser"].browser_status()
+        print(f"  L26 Browser:    tasks={bs['total_tasks']} | "
+              f"failures={bs['failures']} | "
+              f"installed={bs['installed']}")
     print("=" * 48 + "\n")
 
 # ─── SIGNAL HANDLER ──────────────────────────────────────────────────────────
