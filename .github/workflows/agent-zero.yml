@@ -1,0 +1,35 @@
+name: Agent Zero — Autonomous Loop
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Agent Zero daemon
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CYCLE_INTERVAL: "300"
+        run: |
+          python main.py --daemon
+
+      - name: Self-restart
+        if: always()
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: agent-zero.yml
+          token: ${{ secrets.GITHUB_TOKEN }}
