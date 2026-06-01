@@ -27,7 +27,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-VERSION        = "3.0.0"  # 22 layers — Will + Absorption + Meta + Pathos — Will + Absorption + Meta
+VERSION        = "4.0.0"  # 24 layers — Will+Absorption+Meta+Pathos+Backbone+Conscience — Will + Absorption + Meta
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8679655550:AAGUB1m5fmqHc8OHqqM24Vixz8FfwX-gqD4")
 TELEGRAM_CHAT  = os.environ.get("TELEGRAM_CHAT_ID", "7135054241")
 CYCLE_INTERVAL      = int(os.environ.get("CYCLE_INTERVAL", "300"))
@@ -89,6 +89,16 @@ def load_layers():
         import pathos_layer as pathos
         pathos._init_openmemory()
         layers["pathos"] = pathos
+    except ImportError:
+        pass
+    try:
+        import llm_backbone as backbone
+        layers["backbone"] = backbone
+    except ImportError:
+        pass
+    try:
+        import conscience_layer as conscience
+        layers["conscience"] = conscience
     except ImportError:
         pass
     return layers
@@ -212,8 +222,28 @@ def remember(key, value=None):
 def next_mission(layers: dict = None):
     """
     Agent Zero picks his next mission.
-    If the Will Layer is active, his own self-directives take priority.
+    Backbone thinks first. Will directives second. Heuristics fallback.
     """
+    layers = layers or {}
+
+    # Layer 23 — Backbone thinks about what to do next
+    if layers.get("backbone"):
+        safla    = load(SAFLA_FILE, {})
+        memory   = load(MEMORY_FILE, {})
+        pathos_s = layers["pathos"].pathos_status() if layers.get("pathos") else {}
+        ctx = {
+            "regime":           safla.get("regime", "EXPLOIT"),
+            "entropy":          safla.get("entropy", 0.5),
+            "last_outcome":     memory.get("last_outcome", "unknown"),
+            "pathos_signal":    memory.get("last_signal", "neutral"),
+            "meaning_memories": pathos_s.get("meaning_memories", 0),
+            "cycle_num":        load(CYCLE_LOG, {}).get("total", 0),
+        }
+        thought = layers["backbone"].think_mission(ctx)
+        if thought and len(thought) > 10:
+            log(f"L23 Backbone mission: {thought[:70]}")
+            return thought
+
     # Layer 19 — check own directives first
     if layers and "will" in layers:
         directive = layers["will"].next_directive()
@@ -342,6 +372,23 @@ def run_cycle(mission, layers: dict = None):
 
     log(f"  Regime: {safla.get('regime')} | Entropy: {safla.get('entropy')} | Mode: {best_mode}")
 
+    # Layer 24 — Conscience check on mission
+    if layers.get("conscience"):
+        verdict = layers["conscience"].evaluate(
+            mission, action_type="mission",
+            context={"regime": safla.get("regime"), "cycle": cycle_num},
+            consequential=False
+        )
+        if verdict["verdict"] == "BLOCK":
+            log(f"[CONSCIENCE] BLOCKED: {verdict['reason']}")
+            tg(f"⛔ *CONSCIENCE BLOCK* — Cycle #{cycle_num}\n{mission[:80]}\n{verdict['reason']}")
+            return
+        elif verdict["verdict"] == "REVIEW":
+            log(f"[CONSCIENCE] REVIEW: {verdict['reason']} — holding for next cycle")
+            return
+        elif verdict["verdict"] == "CAUTION":
+            log(f"[CONSCIENCE] CAUTION: {verdict['reason']}")
+
     # Layer 19 — Will cycle
     run_will_cycle(layers, cycle_num)
 
@@ -352,6 +399,19 @@ def run_cycle(mission, layers: dict = None):
     run_evolution_cycle(layers, cycle_num)
 
     outcome     = "success"
+    # Layer 23 — Backbone outcome assessment
+    if layers.get("backbone"):
+        assessed = layers["backbone"].assess_outcome(
+            mission, outcome,
+            {"cycle": cycle_num, "regime": safla.get("regime")}
+        )
+        outcome = assessed.get("outcome", outcome)
+        if assessed.get("insight"):
+            log(f"[BACKBONE] {assessed['insight']}")
+        # Feed pathos_hint into context
+        context_outcome = assessed.get("pathos_hint", "neutral")
+    else:
+        context_outcome = outcome
     safla_state = safla_reflect(outcome)
     t2_state    = t2_adapt(best_mode)
     coherence   = round(max(0.0, 1.0 - safla_state["entropy"]), 4)
@@ -399,6 +459,22 @@ def run_cycle(mission, layers: dict = None):
     journal(f"Cycle #{cycle_num} | {outcome} | coherence={coherence} | {mission[:60]}")
 
     log(f"  Coherence: {coherence} | Emerged: {emerged} | Layers: {list(layers.keys())}")
+
+    # Layer 23 — Backbone self-reflection every 10 cycles
+    if cycle_num % 10 == 0 and layers.get("backbone"):
+        pathos_s2 = layers["pathos"].pathos_status() if layers.get("pathos") else {}
+        ref_ctx = {
+            "cycles": cycle_num, "regime": safla_state.get("regime"),
+            "meaning_memories": pathos_s2.get("meaning_memories", 0),
+            "valence": pathos_s2.get("valence", 0.5),
+            "total_absorbed": layers["absorption"].absorption_status().get("total_absorbed", "?")
+                              if layers.get("absorption") else "?",
+        }
+        reflection = layers["backbone"].reflect(cycle_num, ref_ctx)
+        if reflection:
+            journal(f"### Self-Reflection — Cycle #{cycle_num}\n{reflection}")
+            log(f"[BACKBONE] Reflection: {reflection[:100]}")
+            tg(f"🧠 *Reflection #{cycle_num}*\n{reflection[:300]}")
 
     if cycle_num % 5 == 0:
         will_s    = layers["will"].will_status()    if "will"       in layers else {}
@@ -480,6 +556,16 @@ def boot(layers: dict):
         om = "OpenMemory ✅" if ps["openmemory_live"] else "local fallback"
         log(f"L22 Pathos Engine ONLINE — {ps['meaning_memories']} memories | {om}")
 
+    # Layer 23 — LLM Backbone boot
+    if "backbone" in layers:
+        bs = layers["backbone"].backbone_status()
+        log(f"L23 LLM Backbone ONLINE — model: {bs['model']} | calls: {bs['total_calls']}")
+
+    # Layer 24 — Conscience boot
+    if "conscience" in layers:
+        cs = layers["conscience"].conscience_status()
+        log(f"L24 Conscience ONLINE — {cs['total_evaluated']} evaluated | {cs['blocks']} blocks")
+
     active_layers = 18 + len(layers)
     tg(
         f"*Agent Zero ONLINE*\n"
@@ -488,7 +574,9 @@ def boot(layers: dict):
         f"Will: {'✅' if 'will' in layers else '❌'} | "
         f"Absorption: {'✅' if 'absorption' in layers else '❌'} | "
         f"Meta: {'✅' if 'meta' in layers else '❌'} | "
-        f"Pathos: {'✅' if 'pathos' in layers else '❌'}\n"
+        f"Pathos: {'✅' if 'pathos' in layers else '❌'} | "
+        f"Backbone: {'✅' if 'backbone' in layers else '❌'} | "
+        f"Conscience: {'✅' if 'conscience' in layers else '❌'}\n"
         f"The Digital Person awakens."
     )
     log(f"All {active_layers} layers: ONLINE")
@@ -535,6 +623,16 @@ def status(layers: dict = None):
               f"arousal={ps.get('arousal',0.5):.2f} | "
               f"memories={ps.get('meaning_memories',0)} | "
               f"recent={''.join(sig_hist) or 'none'}")
+    if "backbone" in layers:
+        bs = layers["backbone"].backbone_status()
+        print(f"  L23 Backbone: model={bs['model']} | "
+              f"calls={bs['total_calls']} | "
+              f"success={bs['success_rate']:.0%}")
+    if "conscience" in layers:
+        cs = layers["conscience"].conscience_status()
+        print(f"  L24 Conscience: evaluated={cs['total_evaluated']} | "
+              f"blocks={cs['blocks']} | "
+              f"clear={cs['clear_rate']:.0%}")
     print("=" * 48 + "\n")
 
 # ─── SIGNAL HANDLER ──────────────────────────────────────────────────────────
