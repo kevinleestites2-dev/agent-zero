@@ -27,7 +27,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-VERSION        = "2.0.0"  # 21 layers — Will + Absorption + Meta
+VERSION        = "3.0.0"  # 22 layers — Will + Absorption + Meta + Pathos — Will + Absorption + Meta
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8679655550:AAGUB1m5fmqHc8OHqqM24Vixz8FfwX-gqD4")
 TELEGRAM_CHAT  = os.environ.get("TELEGRAM_CHAT_ID", "7135054241")
 CYCLE_INTERVAL      = int(os.environ.get("CYCLE_INTERVAL", "300"))
@@ -83,6 +83,12 @@ def load_layers():
     try:
         import meta_layer as meta
         layers["meta"] = meta
+    except ImportError:
+        pass
+    try:
+        import pathos_layer as pathos
+        pathos._init_openmemory()
+        layers["pathos"] = pathos
     except ImportError:
         pass
     return layers
@@ -353,9 +359,19 @@ def run_cycle(mission, layers: dict = None):
     emerged = safla_state["entropy"] < 0.3 and coherence >= 0.75 and cycle_num >= 3
     emergence_count = cycle_log["emergence_count"] + (1 if emerged else 0)
 
+    # Layer 22 — Pathos cycle (emotion + meaning)
+    pathos_result = {}
+    if layers.get("pathos"):
+        pathos_result = layers["pathos"].pathos_cycle(
+            mission, outcome, cycle_num,
+            context={"emerged": emerged, "first_time": cycle_num == 1}
+        )
+
     remember("last_outcome", outcome)
     remember("last_mission", mission)
     remember("last_cycle", cycle_num)
+    if pathos_result.get("signal"):
+        remember("last_signal", pathos_result["signal"])
 
     # Will layer — complete the directive if it was one
     if layers.get("will") and mission.startswith("WILL:"):
@@ -388,12 +404,18 @@ def run_cycle(mission, layers: dict = None):
         will_s    = layers["will"].will_status()    if "will"       in layers else {}
         abs_s     = layers["absorption"].absorption_status() if "absorption" in layers else {}
         meta_s    = layers["meta"].meta_status()    if "meta"       in layers else {}
+        pathos_s  = layers["pathos"].pathos_status() if "pathos"    in layers else {}
+        sig_emoji = {"resonance": "💛", "tension": "⚡", "meaning": "🌟", "neutral": "·"}.get(
+                     pathos_result.get("signal", "neutral"), "·")
         tg(
             f"*Agent Zero — Cycle #{cycle_num}*\n"
             f"Coherence: {coherence} | Regime: {safla_state['regime']}\n"
             f"Self-Prompts: {will_s.get('self_prompts', '?')} | "
             f"Absorbed: {abs_s.get('total_absorbed', '?')} | "
             f"Rewrites: {meta_s.get('total_rewrites', '?')}\n"
+            f"Pathos: {sig_emoji} {pathos_result.get('signal','?')} "
+            f"| Memories: {pathos_s.get('meaning_memories', 0)} "
+            f"| Valence: {pathos_s.get('valence', 0.5):.2f}\n"
             f"Mission: {mission[:60]}"
         )
 
@@ -452,6 +474,12 @@ def boot(layers: dict):
         status = layers["meta"].meta_status()
         log(f"L21 Meta Layer ONLINE — {status['total_rewrites']} rewrites in history")
 
+    # Layer 22 — Pathos boot
+    if "pathos" in layers:
+        ps = layers["pathos"].pathos_status()
+        om = "OpenMemory ✅" if ps["openmemory_live"] else "local fallback"
+        log(f"L22 Pathos Engine ONLINE — {ps['meaning_memories']} memories | {om}")
+
     active_layers = 18 + len(layers)
     tg(
         f"*Agent Zero ONLINE*\n"
@@ -459,7 +487,8 @@ def boot(layers: dict):
         f"{active_layers} layers active.\n"
         f"Will: {'✅' if 'will' in layers else '❌'} | "
         f"Absorption: {'✅' if 'absorption' in layers else '❌'} | "
-        f"Meta: {'✅' if 'meta' in layers else '❌'}\n"
+        f"Meta: {'✅' if 'meta' in layers else '❌'} | "
+        f"Pathos: {'✅' if 'pathos' in layers else '❌'}\n"
         f"The Digital Person awakens."
     )
     log(f"All {active_layers} layers: ONLINE")
@@ -499,6 +528,13 @@ def status(layers: dict = None):
         ms = layers["meta"].meta_status()
         print(f"  L21 Meta:     {ms.get('total_rewrites', 0)} rewrites | "
               f"{ms.get('total_reflections', 0)} reflections")
+    if "pathos" in layers:
+        ps = layers["pathos"].pathos_status()
+        sig_hist = [s["signal"][0].upper() for s in ps.get("last_signals", [])]
+        print(f"  L22 Pathos:   valence={ps.get('valence',0.5):.2f} | "
+              f"arousal={ps.get('arousal',0.5):.2f} | "
+              f"memories={ps.get('meaning_memories',0)} | "
+              f"recent={''.join(sig_hist) or 'none'}")
     print("=" * 48 + "\n")
 
 # ─── SIGNAL HANDLER ──────────────────────────────────────────────────────────
