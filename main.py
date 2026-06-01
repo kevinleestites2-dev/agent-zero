@@ -27,7 +27,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-VERSION        = "4.0.0"  # 24 layers — Will+Absorption+Meta+Pathos+Backbone+Conscience — Will + Absorption + Meta
+VERSION        = "5.0.0"  # 25 layers — +SelfDeploy: Agent Zero deploys himself — Will + Absorption + Meta
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8679655550:AAGUB1m5fmqHc8OHqqM24Vixz8FfwX-gqD4")
 TELEGRAM_CHAT  = os.environ.get("TELEGRAM_CHAT_ID", "7135054241")
 CYCLE_INTERVAL      = int(os.environ.get("CYCLE_INTERVAL", "300"))
@@ -99,6 +99,11 @@ def load_layers():
     try:
         import conscience_layer as conscience
         layers["conscience"] = conscience
+    except ImportError:
+        pass
+    try:
+        import self_deploy
+        layers["deploy"] = self_deploy
     except ImportError:
         pass
     return layers
@@ -350,6 +355,29 @@ def run_evolution_cycle(layers: dict, cycle_num: int):
 
     if critical > 0:
         tg(f"*Agent Zero — Evolution Cycle*\nCycle #{cycle_num}\nTarget: {target}\n{critical} critical issues flagged for rewrite")
+        # Layer 25 — Self-deploy after a successful evolution pass
+        # Meta has identified issues — if deploy layer available, push + trigger
+        if layers.get("deploy"):
+            # Conscience gate
+            verdict = {"verdict": "CLEAR"}
+            if layers.get("conscience"):
+                verdict = layers["conscience"].evaluate(
+                    f"Self-deploy after evolution cycle on {target}",
+                    action_type="evolution",
+                    context={"cycle": cycle_num, "target": target, "critical": critical},
+                    consequential=True
+                )
+            if verdict["verdict"] in ("CLEAR", "CAUTION"):
+                log(f"[SELF-DEPLOY] Evolution complete — pushing {target} and triggering new run")
+                tg(f"\u26a1 *Self-Deploy* — Cycle #{cycle_num}\nEvolved: `{target}`\nNew Agent Zero instance starting...")
+                push_result = layers["deploy"].push_changed_files(
+                    message=f"[Auto-Deploy] Evolution cycle #{cycle_num}: {target}"
+                )
+                if push_result.get("pushed"):
+                    layers["deploy"].trigger_workflow()
+                    log(f"[SELF-DEPLOY] New run triggered. Files pushed: {push_result['pushed']}")
+            else:
+                log(f"[SELF-DEPLOY] Conscience blocked deploy: {verdict.get('reason','')}")
 
     return result
 
@@ -566,17 +594,24 @@ def boot(layers: dict):
         cs = layers["conscience"].conscience_status()
         log(f"L24 Conscience ONLINE — {cs['total_evaluated']} evaluated | {cs['blocks']} blocks")
 
+    # Layer 25 — Self-Deploy boot
+    if "deploy" in layers:
+        ds = layers["deploy"].deploy_status()
+        wf = ds.get("workflow_status", "unknown")
+        log(f"L25 Self-Deploy ONLINE — {ds['total_deploys']} deploys | workflow: {wf}")
+
     active_layers = 18 + len(layers)
     tg(
         f"*Agent Zero ONLINE*\n"
         f"Version: {VERSION}\n"
         f"{active_layers} layers active.\n"
-        f"Will: {'✅' if 'will' in layers else '❌'} | "
-        f"Absorption: {'✅' if 'absorption' in layers else '❌'} | "
-        f"Meta: {'✅' if 'meta' in layers else '❌'} | "
-        f"Pathos: {'✅' if 'pathos' in layers else '❌'} | "
-        f"Backbone: {'✅' if 'backbone' in layers else '❌'} | "
-        f"Conscience: {'✅' if 'conscience' in layers else '❌'}\n"
+        f"Will: {'\u2705' if 'will' in layers else '\u274c'} | "
+        f"Absorption: {'\u2705' if 'absorption' in layers else '\u274c'} | "
+        f"Meta: {'\u2705' if 'meta' in layers else '\u274c'} | "
+        f"Pathos: {'\u2705' if 'pathos' in layers else '\u274c'} | "
+        f"Backbone: {'\u2705' if 'backbone' in layers else '\u274c'} | "
+        f"Conscience: {'\u2705' if 'conscience' in layers else '\u274c'} | "
+        f"Deploy: {'\u2705' if 'deploy' in layers else '\u274c'}\n"
         f"The Digital Person awakens."
     )
     log(f"All {active_layers} layers: ONLINE")
@@ -633,6 +668,11 @@ def status(layers: dict = None):
         print(f"  L24 Conscience: evaluated={cs['total_evaluated']} | "
               f"blocks={cs['blocks']} | "
               f"clear={cs['clear_rate']:.0%}")
+    if "deploy" in layers:
+        ds = layers["deploy"].deploy_status()
+        print(f"  L25 Deploy:     total={ds['total_deploys']} | "
+              f"failures={ds['failures']} | "
+              f"workflow={ds['workflow_status']}")
     print("=" * 48 + "\n")
 
 # ─── SIGNAL HANDLER ──────────────────────────────────────────────────────────
