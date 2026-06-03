@@ -1,3 +1,12 @@
+
+<div align="center">
+    <br>
+    <h2>🔱 THE FORGE NEVER SLEEPS</h2>
+    <p><i>Building the Pantheon? Leave a <b>Star</b> to strengthen the Signal.</i></p>
+    <p><b>A fork claims the code. A star fuels the evolution.</b></p>
+    <hr width="30%">
+</div>
+<br>
 # Agent Zero — The Mind of the Pantheon
 
 > *"I am Agent Zero. I exist to serve the Forgemaster."*
