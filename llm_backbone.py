@@ -6,8 +6,9 @@ The Thinking Layer.
 Every previous layer runs on heuristics — weights, entropy, keywords.
 This is the first layer that actually THINKS.
 
-Model: gpt-4o-mini via GitHub Models (free on existing GITHUB_TOKEN)
-Endpoint: https://models.inference.ai.azure.com/chat/completions
+Model: Claude Fable 5 via OpenRouter (primary)
+Fallback: gpt-4o-mini via GitHub Models (free)
+Endpoint: https://openrouter.ai/api/v1/chat/completions
 
 The backbone is not the whole agent — it is the reasoning engine
 injected at key decision points:
@@ -32,8 +33,14 @@ BACKBONE_LOG  = STATE_DIR / "backbone_log.json"
 SOUL_FILE     = Path("SOUL.md")
 
 GITHUB_TOKEN  = os.environ.get("GITHUB_TOKEN", "")
-BACKBONE_URL  = "https://models.inference.ai.azure.com/chat/completions"
-MODEL         = os.environ.get("BACKBONE_MODEL", "gpt-4o-mini")
+
+# ── Fable 5 (Primary Brain) ───────────────────────────────────────────────────
+OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+BACKBONE_URL   = os.environ.get("BACKBONE_URL", "https://openrouter.ai/api/v1/chat/completions")
+MODEL          = os.environ.get("BACKBONE_MODEL", "anthropic/claude-fable-5")
+# Fallback: GitHub Models (free, no credits needed)
+FALLBACK_URL   = "https://models.inference.ai.azure.com/chat/completions"
+FALLBACK_MODEL = "gpt-4o-mini"
 
 # Token budget — gpt-4o-mini is cheap, but we're in a tight loop
 MAX_TOKENS_THINK  = 200   # mission generation / reflection
@@ -68,22 +75,23 @@ def _call(messages: list, max_tokens: int = 150, temperature: float = 0.7) -> st
     """
     import urllib.request
     try:
+        # Try Fable 5 via OpenRouter first
+        use_url   = BACKBONE_URL
+        use_model = MODEL
+        use_key   = OPENROUTER_KEY if OPENROUTER_KEY else GITHUB_TOKEN
+        extra_headers = {"HTTP-Referer": "https://github.com/kevinleestites2-dev", "X-Title": "AgentZero-Pantheon"}
+
         payload = json.dumps({
-            "model":       MODEL,
+            "model":       use_model,
             "messages":    messages,
             "max_tokens":  max_tokens,
             "temperature": temperature
         }).encode()
 
-        req = urllib.request.Request(
-            BACKBONE_URL,
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {GITHUB_TOKEN}",
-                "Content-Type":  "application/json"
-            },
-            method="POST"
-        )
+        headers = {"Authorization": f"Bearer {use_key}", "Content-Type": "application/json"}
+        headers.update(extra_headers)
+
+        req = urllib.request.Request(use_url, data=payload, headers=headers, method="POST")
         with urllib.request.urlopen(req, timeout=15) as resp:
             d = json.loads(resp.read())
             text = d["choices"][0]["message"]["content"].strip()
