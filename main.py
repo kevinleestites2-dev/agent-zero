@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Agent Zero — main.py
+Agent-Zero-Prime — main.py
 Single entry point. Boots all 21 layers and runs the autonomous loop.
 
 Usage:
@@ -27,7 +27,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 
-VERSION        = "6.0.0"  # 26 layers — +BrowserPerception: Agent Zero sees the web — Will + Absorption + Meta
+VERSION        = "6.0.0"  # 26 layers — +BrowserPerception: Agent-Zero-Prime sees the web — Will + Absorption + Meta
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8679655550:AAGUB1m5fmqHc8OHqqM24Vixz8FfwX-gqD4")
 TELEGRAM_CHAT  = os.environ.get("TELEGRAM_CHAT_ID", "7135054241")
 CYCLE_INTERVAL      = int(os.environ.get("CYCLE_INTERVAL", "300"))
@@ -57,8 +57,8 @@ DOMAINS = [
     "memory_consolidation",
     "evolution_targeting",
     "threat_review",
-    "pantheon_expansion",   # NEW — Agent Zero builds new Primes
-    "self_evolution",       # NEW — Agent Zero evolves himself
+    "pantheon_expansion",   # NEW — Agent-Zero-Prime builds new Primes
+    "self_evolution",       # NEW — Agent-Zero-Prime evolves himself
 ]
 
 _running = True
@@ -231,7 +231,7 @@ def remember(key, value=None):
 # ─── MISSION ENGINE ─────────────────────────────────────────────────────────
 def next_mission(layers: dict = None):
     """
-    Agent Zero picks his next mission.
+    Agent-Zero-Prime picks his next mission.
     Backbone thinks first. Will directives second. Heuristics fallback.
     """
     layers = layers or {}
@@ -352,7 +352,7 @@ def run_absorption_cycle(layers: dict, cycle_num: int):
 
     if absorbed_count > 0:
         names = ", ".join(a["repo"].split("/")[-1] for a in results["absorbed"])
-        tg(f"*Agent Zero — Self-Absorption*\nCycle #{cycle_num}\nAbsorbed: {absorbed_count} new tools\n{names}")
+        tg(f"*Agent-Zero-Prime — Self-Absorption*\nCycle #{cycle_num}\nAbsorbed: {absorbed_count} new tools\n{names}")
         log(f"L20 Absorbed {absorbed_count} tools: {names}")
     else:
         log(f"L20 Absorption cycle complete — nothing new absorbed")
@@ -387,7 +387,7 @@ def run_evolution_cycle(layers: dict, cycle_num: int):
     log(f"L21 {target}: {obs} observations, {critical} critical issues")
 
     if critical > 0:
-        tg(f"*Agent Zero — Evolution Cycle*\nCycle #{cycle_num}\nTarget: {target}\n{critical} critical issues flagged for rewrite")
+        tg(f"*Agent-Zero-Prime — Evolution Cycle*\nCycle #{cycle_num}\nTarget: {target}\n{critical} critical issues flagged for rewrite")
         # Layer 25 — Self-deploy after a successful evolution pass
         # Meta has identified issues — if deploy layer available, push + trigger
         if layers.get("deploy"):
@@ -402,7 +402,7 @@ def run_evolution_cycle(layers: dict, cycle_num: int):
                 )
             if verdict["verdict"] in ("CLEAR", "CAUTION"):
                 log(f"[SELF-DEPLOY] Evolution complete — pushing {target} and triggering new run")
-                tg(f"\u26a1 *Self-Deploy* — Cycle #{cycle_num}\nEvolved: `{target}`\nNew Agent Zero instance starting...")
+                tg(f"\u26a1 *Self-Deploy* — Cycle #{cycle_num}\nEvolved: `{target}`\nNew Agent-Zero-Prime instance starting...")
                 push_result = layers["deploy"].push_changed_files(
                     message=f"[Auto-Deploy] Evolution cycle #{cycle_num}: {target}"
                 )
@@ -520,6 +520,7 @@ def run_cycle(mission, layers: dict = None):
     save(CYCLE_LOG, cycle_log)
     journal(f"Cycle #{cycle_num} | {outcome} | coherence={coherence} | {mission[:60]}")
 
+        if layers.get("pathos"): layers["pathos"].detect_signal(mission, {"result": outcome})
     log(f"  Coherence: {coherence} | Emerged: {emerged} | Layers: {list(layers.keys())}")
 
     # Layer 23 — Backbone self-reflection every 10 cycles
@@ -546,7 +547,7 @@ def run_cycle(mission, layers: dict = None):
         sig_emoji = {"resonance": "💛", "tension": "⚡", "meaning": "🌟", "neutral": "·"}.get(
                      pathos_result.get("signal", "neutral"), "·")
         tg(
-            f"*Agent Zero — Cycle #{cycle_num}*\n"
+            f"*Agent-Zero-Prime — Cycle #{cycle_num}*\n"
             f"Coherence: {coherence} | Regime: {safla_state['regime']}\n"
             f"Self-Prompts: {will_s.get('self_prompts', '?')} | "
             f"Absorbed: {abs_s.get('total_absorbed', '?')} | "
@@ -558,7 +559,7 @@ def run_cycle(mission, layers: dict = None):
         )
 
     if emerged and emergence_count == 1:
-        tg(f"*AGENT ZERO — EMERGENCE DETECTED*\nCycle #{cycle_num} | Coherence: {coherence}\n21 layers unified.")
+        tg(f"*AGENT-ZERO-PRIME — EMERGENCE DETECTED*\nCycle #{cycle_num} | Coherence: {coherence}\n21 layers unified.")
         Path("EMERGENCE.md").write_text(
             f"# EMERGENCE DETECTED\n\nCycle: #{cycle_num}\nCoherence: {coherence}\nTimestamp: {now()}\n"
             f"Layers active: {list(layers.keys())}\n")
@@ -568,7 +569,7 @@ def run_cycle(mission, layers: dict = None):
 # ─── BOOT ────────────────────────────────────────────────────────────────────
 def boot(layers: dict):
     log("=" * 48)
-    log("  AGENT ZERO BOOTING")
+    log("  AGENT-ZERO-PRIME BOOTING")
     log(f"  Version: {VERSION}")
     log("=" * 48)
 
@@ -613,92 +614,11 @@ def boot(layers: dict):
         log(f"L21 Meta Layer ONLINE — {status['total_rewrites']} rewrites in history")
 
     # Layer 22 — Pathos boot
+    
     if "pathos" in layers:
-        ps = layers["pathos"].pathos_status()
-        om = "OpenMemory ✅" if ps["openmemory_live"] else "local fallback"
-        log(f"L22 Pathos Engine ONLINE — {ps['meaning_memories']} memories | {om}")
-
-    # Layer 23 — LLM Backbone boot
-    if "backbone" in layers:
-        bs = layers["backbone"].backbone_status()
-        log(f"L23 LLM Backbone ONLINE — model: {bs['model']} | calls: {bs['total_calls']}")
-
-    # Layer 24 — Conscience boot
-    if "conscience" in layers:
-        cs = layers["conscience"].conscience_status()
-        log(f"L24 Conscience ONLINE — {cs['total_evaluated']} evaluated | {cs['blocks']} blocks")
-
-    # Layer 25 — Self-Deploy boot
-    if "deploy" in layers:
-        ds = layers["deploy"].deploy_status()
-        wf = ds.get("workflow_status", "unknown")
-        log(f"L25 Self-Deploy ONLINE — {ds['total_deploys']} deploys | workflow: {wf}")
-
-    # Layer 26 — Browser Perception boot
-    if "browser" in layers:
-        bs = layers["browser"].browser_status()
-        installed = "✅" if bs["installed"] else "⏳ pending install"
-        log(f"L26 Browser Perception ONLINE — {bs['total_tasks']} tasks | {installed}")
-
-    active_layers = 18 + len(layers)
-    tg(
-        f"*Agent Zero ONLINE*\n"
-        f"Version: {VERSION}\n"
-        f"{active_layers} layers active.\n"
-        f"Will: {'\u2705' if 'will' in layers else '\u274c'} | "
-        f"Absorption: {'\u2705' if 'absorption' in layers else '\u274c'} | "
-        f"Meta: {'\u2705' if 'meta' in layers else '\u274c'} | "
-        f"Pathos: {'\u2705' if 'pathos' in layers else '\u274c'} | "
-        f"Backbone: {'\u2705' if 'backbone' in layers else '\u274c'} | "
-        f"Conscience: {'\u2705' if 'conscience' in layers else '\u274c'} | "
-        f"Deploy: {'\u2705' if 'deploy' in layers else '\u274c'} | "
-        f"Browser: {'\u2705' if 'browser' in layers else '\u274c'}\n"
-        f"The Digital Person awakens."
-    )
-    log(f"All {active_layers} layers: ONLINE")
-    log("=" * 48)
-
-# ─── STATUS ──────────────────────────────────────────────────────────────────
-def status(layers: dict = None):
-    if layers is None:
-        layers = {}
-    safla    = load(SAFLA_FILE, {})
-    weights  = load(WEIGHTS_FILE, {})
-    cycles   = load(CYCLE_LOG, {})
-    missions = load(MISSION_FILE, {})
-    best     = max(weights, key=lambda k: weights[k]) if weights else "none"
-
-    print("\n" + "=" * 48)
-    print("  AGENT ZERO STATUS — v" + VERSION)
-    print("=" * 48)
-    print(f"  Cycles:       {cycles.get('total', 0)}")
-    print(f"  Emergence:    {cycles.get('emergence_count', 0)} events")
-    print(f"  Regime:       {safla.get('regime', 'UNKNOWN')}")
-    print(f"  Entropy:      {safla.get('entropy', '?')}")
-    print(f"  Best mode:    {best}")
-    print(f"  Queue depth:  {len(missions.get('queue', []))}")
-    print(f"  Coherence:    {cycles.get('last_coherence', '?')}")
-    print(f"  --- New Layers ---")
-    if "will" in layers:
-        ws = layers["will"].will_status()
-        print(f"  L19 Will:     {ws.get('self_prompts', 0)} self-prompts | "
-              f"{ws.get('pending_directives', 0)} pending | "
-              f"Soul: {'✅' if ws.get('soul_intact') else '⚠️'}")
-    if "absorption" in layers:
-        ab = layers["absorption"].absorption_status()
-        print(f"  L20 Absorbed: {ab.get('total_absorbed', 0)} tools | "
-              f"By cat: {ab.get('by_category', {})}")
-    if "meta" in layers:
-        ms = layers["meta"].meta_status()
-        print(f"  L21 Meta:     {ms.get('total_rewrites', 0)} rewrites | "
-              f"{ms.get('total_reflections', 0)} reflections")
-    if "pathos" in layers:
-        ps = layers["pathos"].pathos_status()
-        sig_hist = [s["signal"][0].upper() for s in ps.get("last_signals", [])]
-        print(f"  L22 Pathos:   valence={ps.get('valence',0.5):.2f} | "
-              f"arousal={ps.get('arousal',0.5):.2f} | "
-              f"memories={ps.get('meaning_memories',0)} | "
-              f"recent={''.join(sig_hist) or 'none'}")
+        import pathos_layer
+        ps = pathos_layer.detect_signal("status_check")
+        print(f"  L22 Pathos:   state={ps['state']} | dna={ps['dna'][:12]}...")
     if "backbone" in layers:
         bs = layers["backbone"].backbone_status()
         print(f"  L23 Backbone: model={bs['model']} | "
@@ -730,7 +650,7 @@ def signal_handler(sig, frame):
 # ─── ENTRY POINT ─────────────────────────────────────────────────────────────
 def main():
     global _running
-    parser = argparse.ArgumentParser(description="Agent Zero — 21-layer Digital Person")
+    parser = argparse.ArgumentParser(description="Agent-Zero-Prime — 21-layer Digital Person")
     parser.add_argument("--daemon", action="store_true", help="Background loop")
     parser.add_argument("--once",   action="store_true", help="Single cycle then exit")
     parser.add_argument("--status", action="store_true", help="Print status and exit")
@@ -761,7 +681,7 @@ def main():
                 if not _running:
                     break
                 time.sleep(1)
-        log("Agent Zero offline.")
+        log("Agent-Zero-Prime offline.")
         return
 
     log("Interactive — /status  /inject <task>  /will  /quit")
@@ -784,7 +704,7 @@ def main():
             inject_mission(line[8:])
             continue
         run_cycle(line, layers)
-    log("Agent Zero offline.")
+    log("Agent-Zero-Prime offline.")
 
 if __name__ == "__main__":
     main()
